@@ -6,11 +6,12 @@ const processhandler = require('./processhandler');
 const utilfunctions = require('./utilfunctions');
 
 const app = express();
-dotenv.config();
-const port = process.env.PORT
-
-app.use(cors());
 app.use(express.json());
+app.use(cors());
+
+dotenv.config();
+
+const port = process.env.PORT
 
 app.post('/', async (req, res) => {
     let json = {}

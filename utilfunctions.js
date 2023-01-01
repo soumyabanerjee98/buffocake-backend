@@ -90,7 +90,7 @@ module.exports.UploadPhotos = async (data) => {
         let upload = multer({
             dest: './media/photos/'
         })
-        response = {...processhandler?.returnJSONsuccess, returnData: res?.data, msg: 'Process completed successfully!'}
+        response = {...processhandler?.returnJSONsuccess, returnData: data, msg: 'Process completed successfully!'}
         return response
     } catch (error) {
         response = {...processhandler?.returnJSONfailure, msg: `Process failed : ${error}!`}
