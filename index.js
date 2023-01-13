@@ -13,6 +13,12 @@ dotenv.config();
 
 const port = process.env.PORT
 
+mongoose.set('strictQuery', false);
+mongoose
+.connect(process.env.DB_URL)
+.then(() => console.log("Database Connected"))
+.catch((err) => console.log("error in DB", err));
+
 app.post('/', async (req, res) => {
     let json = {}
     if(!utilfunctions?.voidCheck(req?.body?.processId)){
