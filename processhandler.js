@@ -8,11 +8,11 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
         case 'otp_verify':
             return  utilfunctions?.OTPVerify(data_json)
             break;
-        case 'get-device-network-ip':
-            return  utilfunctions?.GetDeviceNetworkIP()
+        case 'get-own-network-ip':
+            return  utilfunctions?.GetOwnNetworkIP()
             break;
-        case 'get-device-network-location':
-            return  utilfunctions?.GetDeviceNetworkLocation(data_json)
+        case 'get-other-network-ip':
+            return  utilfunctions?.GetOtherNetworkIP(data_json)
             break;
         case 'upload-media-photos':
             return utilfunctions?.UploadPhotos(data_json)

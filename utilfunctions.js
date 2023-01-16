@@ -1,6 +1,5 @@
 const processhandler = require('./processhandler');
 const dotenv = require('dotenv');
-const IP = require('ip');
 const axios = require('axios');
 const multer  = require('multer')
 
@@ -60,12 +59,23 @@ module.exports.OTPVerify = async (data) => {
     return response
 } 
 
-module.exports.GetDeviceNetworkIP = async () => {
-    let ip = IP?.address('public', 'ipv4');
-    return {...processhandler?.returnJSONsuccess, returnData: ip, msg: 'Process completed successfully!'}
+module.exports.GetOwnNetworkIP = async () => {
+    let response = null;
+    const header = {
+        method: 'GET',
+        url: `http://ip-api.com/json?fields=94207`
+    }
+    await axios(header)
+    .then((res) => {
+        response = {...processhandler?.returnJSONsuccess, returnData: res?.data, msg: 'Process completed successfully!'}
+    })
+    .catch((err) => {
+        response = {...processhandler?.returnJSONfailure, msg: `Process failed : ${err}!`}
+    })
+    return response
 }
 
-module.exports.GetDeviceNetworkLocation = async (data) => {
+module.exports.GetOtherNetworkIP = async (data) => {
     let response = null;
     const header = {
         method: 'GET',
