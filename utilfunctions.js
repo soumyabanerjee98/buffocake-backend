@@ -59,7 +59,7 @@ module.exports.OTPVerify = async (data) => {
     return response
 } 
 
-module.exports.GetOwnNetworkIP = async (req_addr) => {
+module.exports.GetOwnNetworkIP = async () => {
     let response = null;
     const header = {
         method: 'GET',
@@ -67,7 +67,7 @@ module.exports.GetOwnNetworkIP = async (req_addr) => {
     }
     await axios(header)
     .then((res) => {
-        response = {...processhandler?.returnJSONsuccess, returnData: req_addr, msg: 'Process completed successfully!'}
+        response = {...processhandler?.returnJSONsuccess, returnData: res?.data, msg: 'Process completed successfully!'}
     })
     .catch((err) => {
         response = {...processhandler?.returnJSONfailure, msg: `Process failed : ${err}!`}

@@ -6,6 +6,7 @@ const processhandler = require('./processhandler');
 const utilfunctions = require('./utilfunctions');
 
 const app = express();
+app.set('trust proxy', true);
 app.use(express.json());
 app.use(cors());
 
@@ -25,7 +26,7 @@ app.post('/', async (req, res) => {
         json = {...processhandler?.returnJSONfailure, msg: 'Invalid request format, Process ID missing!'}
     }
     else{
-        json = await processhandler?.ProcessIdHandler(req?.socket?.remoteAddress, req?.body?.processId, req?.body?.datajson)
+        json = await processhandler?.ProcessIdHandler(req?.body?.processId, req?.body?.datajson)
     }
     res?.send(json)
 })
