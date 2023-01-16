@@ -61,7 +61,7 @@ module.exports.OTPVerify = async (data) => {
 } 
 
 module.exports.GetDeviceNetworkIP = async () => {
-    let ip = IP?.address('private', 'ipv6');
+    let ip = IP?.address('public', 'ipv4');
     return {...processhandler?.returnJSONsuccess, returnData: ip, msg: 'Process completed successfully!'}
 }
 
