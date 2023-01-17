@@ -20,7 +20,7 @@ module.exports.PhoneVerify = async (data) => {
         return {...processhandler?.returnJSONfailure, msg: 'Invalid body'}
     }
     if(!this.voidCheck(data?.phone)){
-        return {...processhandler?.returnJSONfailure, msg: 'Invalid body format, Phone number missing!'}
+        return {...processhandler?.returnJSONfailure, msg: 'Invalid body format, {phone} missing!'}
     }    
     await twilio_client?.verify?.services(process.env.TWILIO_SID)?.verifications?.create({
         to: data?.phone,
@@ -40,13 +40,13 @@ module.exports.OTPVerify = async (data) => {
         return {...processhandler?.returnJSONfailure, msg: 'Invalid body'}
     }
     if(!this.voidCheck(data?.phone) && !this.voidCheck(data?.otp)){
-        return {...processhandler?.returnJSONfailure, msg: 'Invalid body format, Phone number and OTP missing!'}
+        return {...processhandler?.returnJSONfailure, msg: 'Invalid body format, {phone} and {otp} missing!'}
     }
     if(!this.voidCheck(data?.phone)){
-        return {...processhandler?.returnJSONfailure, msg: 'Invalid body format, Phone number missing!'}
+        return {...processhandler?.returnJSONfailure, msg: 'Invalid body format, {phone} missing!'}
     }
     if(!this.voidCheck(data?.otp)){
-        return {...processhandler?.returnJSONfailure, msg: 'Invalid body format, OTP missing!'}
+        return {...processhandler?.returnJSONfailure, msg: 'Invalid body format, {otp} missing!'}
     }
     await twilio_client?.verify?.services(process.env.TWILIO_SID)?.verificationChecks?.create({
         to: data?.phone,
@@ -58,41 +58,6 @@ module.exports.OTPVerify = async (data) => {
     })
     return response
 } 
-
-module.exports.GetOwnNetworkIP = async () => {
-    let response = null;
-    const header = {
-        method: 'GET',
-        url: `http://ip-api.com/json?fields=94207`
-    }
-    await axios(header)
-    .then((res) => {
-        response = {...processhandler?.returnJSONsuccess, returnData: res?.data, msg: 'Process completed successfully!'}
-    })
-    .catch((err) => {
-        response = {...processhandler?.returnJSONfailure, msg: `Process failed : ${err}!`}
-    })
-    return response
-}
-
-module.exports.GetOtherNetworkIP = async (data) => {
-    let response = null;
-    const header = {
-        method: 'GET',
-        url: `http://ip-api.com/json/${data?.ip}?fields=94207` //https://ip-api.com/
-    }
-    if(!this.voidCheck(data?.ip)){
-        return {...processhandler?.returnJSONfailure, msg: 'Invalid body format, IP missing!'}
-    }
-    await axios(header)
-    .then((res) => {
-        response = {...processhandler?.returnJSONsuccess, returnData: res?.data, msg: 'Process completed successfully!'}
-    })
-    .catch((err) => {
-        response = {...processhandler?.returnJSONfailure, msg: `Process failed : ${err}!`}
-    })
-    return response
-}
 
 module.exports.UploadPhotos = async (data) => {
     let response = null;

@@ -2,17 +2,11 @@ const utilfunctions = require('./utilfunctions');
 
 module.exports.ProcessIdHandler = async (process_id, data_json) => {
     switch (process_id) {
-        case 'phone_verify':
+        case 'phone-verify':
             return  utilfunctions?.PhoneVerify(data_json)
             break;
-        case 'otp_verify':
+        case 'otp-verify':
             return  utilfunctions?.OTPVerify(data_json)
-            break;
-        case 'get-own-network-ip':
-            return  utilfunctions?.GetOwnNetworkIP()
-            break;
-        case 'get-other-network-ip':
-            return  utilfunctions?.GetOtherNetworkIP(data_json)
             break;
         case 'upload-media-photos':
             return utilfunctions?.UploadPhotos(data_json)
