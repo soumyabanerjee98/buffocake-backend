@@ -8,8 +8,20 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
     case "otp-verify":
       return utilfunctions?.OTPVerify(data_json);
       break;
-    case "upload-media-photos":
-      return utilfunctions?.UploadPhotos(data_json);
+    case "user-login-with-phone":
+      return utilfunctions?.LoginUserWithPhone(data_json);
+      break;
+    case "user-login-with-email":
+      return utilfunctions?.LoginUserWithEmail(data_json);
+      break;
+    case "user-phone-check":
+      return utilfunctions?.CheckUserPhone(data_json);
+      break;
+    case "user-email-check":
+      return utilfunctions?.CheckUserEmail(data_json);
+      break;
+    case "create-new-account":
+      return utilfunctions?.CreateAccount(data_json);
       break;
     case "paytm-transaction-token-generate":
       return utilfunctions?.TransactionTokenGenerate(data_json);

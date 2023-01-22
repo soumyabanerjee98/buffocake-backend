@@ -1,9 +1,8 @@
 const processhandler = require("./processhandler");
 const dotenv = require("dotenv");
-const axios = require("axios");
-const multer = require("multer");
 const https = require("https");
 const PaytmChecksum = require("paytmchecksum");
+const Users = require("./models/Users");
 
 dotenv.config();
 
@@ -39,7 +38,10 @@ module.exports.PhoneVerify = async (data) => {
     .then((res) => {
       response = {
         ...processhandler?.returnJSONsuccess,
-        returnData: res,
+        returnData: {
+          status: res?.status,
+          to: res?.to,
+        },
         msg: "Process completed successfully!",
       };
     })
@@ -82,11 +84,25 @@ module.exports.OTPVerify = async (data) => {
       code: data?.otp,
     })
     .then((res) => {
-      response = {
-        ...processhandler?.returnJSONsuccess,
-        returnData: res,
-        msg: "Process completed successfully!",
-      };
+      if (res?.status === "approved") {
+        response = {
+          ...processhandler?.returnJSONsuccess,
+          returnData: {
+            status: res?.status,
+            to: res?.to,
+          },
+          msg: "Process completed successfully!",
+        };
+      } else {
+        response = {
+          ...processhandler?.returnJSONfailure,
+          returnData: {
+            status: res?.status,
+            to: res?.to,
+          },
+          msg: "Invalid OTP!",
+        };
+      }
     })
     .catch((err) => {
       response = {
@@ -97,24 +113,172 @@ module.exports.OTPVerify = async (data) => {
   return response;
 };
 
-module.exports.UploadPhotos = async (data) => {
-  let response = null;
-  try {
-    let upload = multer({
-      dest: "./media/photos/",
-    });
-    response = {
-      ...processhandler?.returnJSONsuccess,
-      returnData: data,
-      msg: "Process completed successfully!",
-    };
-    return response;
-  } catch (error) {
-    response = {
+module.exports.LoginUserWithPhone = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (!this.voidCheck(data?.phone) || !this.voidCheck(data?.password)) {
+    return {
       ...processhandler?.returnJSONfailure,
-      msg: `Process failed : ${error}!`,
+      msg: "Missing keys: {phone, password}",
     };
-    return response;
+  } else {
+    let findUser = await Users.findOne({
+      phoneNumber: data?.phone,
+    });
+    if (findUser === null) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        returnData: findUser,
+        msg: "User not found",
+      };
+    } else {
+      if (findUser?.password === data?.password) {
+        return {
+          ...processhandler?.returnJSONsuccess,
+          returnData: {
+            firstName: findUser?.firstName,
+            lastName: findUser?.lastName,
+            email: findUser?.email,
+            phoneNumber: findUser?.phoneNumber,
+            profilePhoto: findUser?.profilePhoto,
+          },
+          msg: "Logged in successfully",
+        };
+      } else {
+        return {
+          ...processhandler?.returnJSONfailure,
+          msg: "Invalid password",
+        };
+      }
+    }
+  }
+};
+module.exports.LoginUserWithEmail = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (!this.voidCheck(data?.email)) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {email}",
+    };
+  } else {
+    let findUser = await Users.findOne({
+      email: data?.email,
+    });
+    if (findUser === null) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        returnData: findUser,
+        msg: "User not found",
+      };
+    } else {
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: findUser,
+        msg: "Process completed successfully",
+      };
+    }
+  }
+};
+module.exports.CheckUserPhone = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (!this.voidCheck(data?.phoneNumber)) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {phoneNumber}",
+    };
+  } else {
+    let findUser = await Users.findOne({
+      phoneNumber: data?.phoneNumber,
+    });
+    if (findUser === null) {
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: {
+          phoneNumber: data?.phoneNumber,
+        },
+        msg: "New User",
+      };
+    } else {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "User already exists!",
+      };
+    }
+  }
+};
+module.exports.CheckUserEmail = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (
+    !this.voidCheck(data?.email) ||
+    !this.voidCheck(data?.firstName) ||
+    !this.voidCheck(data?.lastName)
+  ) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {email, firstName, lastName}",
+    };
+  } else {
+    let findUser = await Users.findOne({
+      email: data?.email,
+    });
+    if (findUser === null) {
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: {
+          firstName: data?.firstName,
+          lastName: data?.lastName,
+          email: data?.email,
+        },
+        msg: "New User",
+      };
+    } else {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "User already exists!",
+      };
+    }
+  }
+};
+
+module.exports.CreateAccount = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.firstName) ||
+      !this.voidCheck(data?.lastName) ||
+      !this.voidCheck(data?.phoneNumber) ||
+      !this.voidCheck(data?.password) ||
+      !this.voidCheck(data?.email)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {firstName, lastName, phoneNumber, password, email}",
+      };
+    } else {
+      const newUser = new Users({
+        firstName: data?.firstName,
+        lastName: data?.lastName,
+        email: data?.email === "" ? null : data?.email,
+        phoneNumber: data?.phoneNumber,
+        password: data?.password,
+        profilePhoto: null,
+      });
+      let result = await newUser.save();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: "Account created successfully!",
+      };
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error.message}`,
+    };
   }
 };
 
@@ -140,8 +304,8 @@ module.exports.TransactionTokenGenerate = async (data) => {
         requestType: "Payment",
         mid: data?.mid,
         websiteName: process.env.WEBSITE_NAME,
-        orderId: data?.oid,
-        callbackUrl: "",
+        orderId: data?.oid?.toString(),
+        callbackUrl: process.env.PAYTM_CALLBACK_URL,
         txnAmount: {
           value: data?.value?.toString(),
           currency: "INR",
@@ -178,7 +342,7 @@ module.exports.TransactionTokenGenerate = async (data) => {
             });
 
             post_res.on("end", function () {
-              console.log("Response: ", response);
+              // console.log("Response: ", response);
               resolve(JSON.parse(response).body);
             });
           });
@@ -188,11 +352,20 @@ module.exports.TransactionTokenGenerate = async (data) => {
         });
       };
       let myResponse = await requestAsyncFunc();
-      returnResponse = {
-        ...processhandler?.returnJSONsuccess,
-        returnData: myResponse,
-        msg: "Process completed successfully!",
-      };
+      if (myResponse?.resultInfo?.resultStatus === "F") {
+        returnResponse = {
+          ...processhandler?.returnJSONfailure,
+          returnData: myResponse?.resultInfo?.resultMsg,
+          msg: "Something went wrong!",
+        };
+      } else {
+        returnResponse = {
+          ...processhandler?.returnJSONsuccess,
+          returnData: myResponse,
+          msg: "Process completed successfully!",
+        };
+      }
+
       return returnResponse;
     }
   } catch (error) {
