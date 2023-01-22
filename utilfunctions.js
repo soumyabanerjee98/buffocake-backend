@@ -174,8 +174,14 @@ module.exports.LoginUserWithEmail = async (data) => {
     } else {
       return {
         ...processhandler?.returnJSONsuccess,
-        returnData: findUser,
-        msg: "Process completed successfully",
+        returnData: {
+          firstName: findUser?.firstName,
+          lastName: findUser?.lastName,
+          email: findUser?.email,
+          phoneNumber: findUser?.phoneNumber,
+          profilePhoto: findUser?.profilePhoto,
+        },
+        msg: "Logged in successfully",
       };
     }
   }
