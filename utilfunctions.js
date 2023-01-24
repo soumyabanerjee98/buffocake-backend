@@ -2,6 +2,7 @@ const processhandler = require("./processhandler");
 const dotenv = require("dotenv");
 const https = require("https");
 const PaytmChecksum = require("paytmchecksum");
+const jwt = require("jsonwebtoken");
 const Users = require("./models/Users");
 
 dotenv.config();
@@ -133,9 +134,15 @@ module.exports.LoginUserWithPhone = async (data) => {
       };
     } else {
       if (findUser?.password === data?.password) {
+        const accessToken = jwt.sign(
+          { userId: findUser?._id },
+          process.env.JWT_SECRET_TOKEN,
+          { expiresIn: "20s" }
+        );
         return {
           ...processhandler?.returnJSONsuccess,
           returnData: {
+            accessToken: accessToken,
             id: findUser?._id,
             firstName: findUser?.firstName,
             lastName: findUser?.lastName,
@@ -154,6 +161,7 @@ module.exports.LoginUserWithPhone = async (data) => {
     }
   }
 };
+
 module.exports.LoginUserWithEmail = async (data) => {
   if (!this.voidCheck(data)) {
     return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
@@ -188,6 +196,37 @@ module.exports.LoginUserWithEmail = async (data) => {
     }
   }
 };
+
+module.exports.VerifyToken = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (!this.voidCheck(data?.token)) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {token}",
+      };
+    } else {
+      const verifyResponse = jwt.verify(
+        data?.token,
+        process.env.JWT_SECRET_TOKEN
+      );
+      if (verifyResponse) {
+        return {
+          ...processhandler?.returnJSONsuccess,
+          returnData: { id: verifyResponse?.userId },
+          msg: "verified successfully!",
+        };
+      }
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Invalid token!",
+    };
+  }
+};
+
 module.exports.CheckUserPhone = async (data) => {
   if (!this.voidCheck(data)) {
     return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
@@ -216,6 +255,7 @@ module.exports.CheckUserPhone = async (data) => {
     }
   }
 };
+
 module.exports.CheckUserEmail = async (data) => {
   if (!this.voidCheck(data)) {
     return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };

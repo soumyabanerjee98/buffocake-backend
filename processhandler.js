@@ -8,6 +8,9 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
     case "otp-verify":
       return utilfunctions?.OTPVerify(data_json);
       break;
+    case "verify-login-token":
+      return utilfunctions?.VerifyToken(data_json);
+      break;
     case "user-login-with-phone":
       return utilfunctions?.LoginUserWithPhone(data_json);
       break;
