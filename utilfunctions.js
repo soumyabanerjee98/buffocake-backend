@@ -136,6 +136,7 @@ module.exports.LoginUserWithPhone = async (data) => {
         return {
           ...processhandler?.returnJSONsuccess,
           returnData: {
+            id: findUser?._id,
             firstName: findUser?.firstName,
             lastName: findUser?.lastName,
             email: findUser?.email,
@@ -175,6 +176,7 @@ module.exports.LoginUserWithEmail = async (data) => {
       return {
         ...processhandler?.returnJSONsuccess,
         returnData: {
+          id: findUser?._id,
           firstName: findUser?.firstName,
           lastName: findUser?.lastName,
           email: findUser?.email,
