@@ -137,7 +137,7 @@ module.exports.LoginUserWithPhone = async (data) => {
         const accessToken = jwt.sign(
           { userId: findUser?._id },
           process.env.JWT_SECRET_TOKEN,
-          { expiresIn: "20s" }
+          { expiresIn: process.env.JWT_TOKEN_EXP }
         );
         return {
           ...processhandler?.returnJSONsuccess,
@@ -181,9 +181,15 @@ module.exports.LoginUserWithEmail = async (data) => {
         msg: "User not found",
       };
     } else {
+      const accessToken = jwt.sign(
+        { userId: findUser?._id },
+        process.env.JWT_SECRET_TOKEN,
+        { expiresIn: process.env.JWT_TOKEN_EXP }
+      );
       return {
         ...processhandler?.returnJSONsuccess,
         returnData: {
+          accessToken: accessToken,
           id: findUser?._id,
           firstName: findUser?.firstName,
           lastName: findUser?.lastName,
@@ -212,17 +218,36 @@ module.exports.VerifyToken = async (data) => {
         process.env.JWT_SECRET_TOKEN
       );
       if (verifyResponse) {
-        return {
-          ...processhandler?.returnJSONsuccess,
-          returnData: { id: verifyResponse?.userId },
-          msg: "verified successfully!",
-        };
+        const returnResponse = new Promise((resolve, reject) => {
+          Users.findById(verifyResponse?.userId, async (err, user) => {
+            if (err) {
+              resolve({
+                ...processhandler?.returnJSONfailure,
+                msg: `Error: ${err}`,
+              });
+            } else {
+              resolve({
+                ...processhandler?.returnJSONsuccess,
+                returnData: {
+                  id: user?._id,
+                  firstName: user?.firstName,
+                  lastName: user?.lastName,
+                  email: user?.email,
+                  phoneNumber: user?.phoneNumber,
+                  profilePhoto: user?.profilePhoto,
+                },
+                msg: "Verified successfully!",
+              });
+            }
+          });
+        });
+        return returnResponse;
       }
     }
   } catch (error) {
     return {
       ...processhandler?.returnJSONfailure,
-      msg: "Invalid token!",
+      msg: `Error: ${error}`,
     };
   }
 };
