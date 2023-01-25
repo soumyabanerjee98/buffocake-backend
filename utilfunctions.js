@@ -453,3 +453,24 @@ module.exports.TransactionTokenGenerate = async (data) => {
     };
   }
 };
+
+module.exports.GetProductDetails = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (!this.voidCheck(data?.productId)) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {productId}",
+    };
+  } else {
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnData: {
+        metaTitle: `Product ${data?.productId}`,
+        metaDetails: `Product ${data?.productId}`,
+        id: data?.productId,
+      },
+      msg: "Data fetched successfully!",
+    };
+  }
+};
