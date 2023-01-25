@@ -142,13 +142,15 @@ module.exports.LoginUserWithPhone = async (data) => {
         return {
           ...processhandler?.returnJSONsuccess,
           returnData: {
+            profileData: {
+              id: findUser?._id,
+              firstName: findUser?.firstName,
+              lastName: findUser?.lastName,
+              email: findUser?.email,
+              phoneNumber: findUser?.phoneNumber,
+              profilePhoto: findUser?.profilePhoto,
+            },
             accessToken: accessToken,
-            id: findUser?._id,
-            firstName: findUser?.firstName,
-            lastName: findUser?.lastName,
-            email: findUser?.email,
-            phoneNumber: findUser?.phoneNumber,
-            profilePhoto: findUser?.profilePhoto,
           },
           msg: "Logged in successfully",
         };
@@ -189,13 +191,15 @@ module.exports.LoginUserWithEmail = async (data) => {
       return {
         ...processhandler?.returnJSONsuccess,
         returnData: {
+          profileData: {
+            id: findUser?._id,
+            firstName: findUser?.firstName,
+            lastName: findUser?.lastName,
+            email: findUser?.email,
+            phoneNumber: findUser?.phoneNumber,
+            profilePhoto: findUser?.profilePhoto,
+          },
           accessToken: accessToken,
-          id: findUser?._id,
-          firstName: findUser?.firstName,
-          lastName: findUser?.lastName,
-          email: findUser?.email,
-          phoneNumber: findUser?.phoneNumber,
-          profilePhoto: findUser?.profilePhoto,
         },
         msg: "Logged in successfully",
       };
