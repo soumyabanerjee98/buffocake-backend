@@ -4,6 +4,7 @@ const https = require("https");
 const PaytmChecksum = require("paytmchecksum");
 const jwt = require("jsonwebtoken");
 const Users = require("./models/Users");
+const Products = require("./models/Products");
 
 dotenv.config();
 
@@ -454,23 +455,94 @@ module.exports.TransactionTokenGenerate = async (data) => {
   }
 };
 
-module.exports.GetProductDetails = async (data) => {
-  if (!this.voidCheck(data)) {
-    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
-  } else if (!this.voidCheck(data?.productId)) {
+module.exports.SaveNewProduct = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.metaHead) ||
+      !this.voidCheck(data?.metaDesc) ||
+      !this.voidCheck(data?.title) ||
+      !this.voidCheck(data?.description) ||
+      !this.voidCheck(data?.catagory) ||
+      !this.voidCheck(data?.unitValue)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {metaHead, metaDesc, title, description, catagory, unitValue}",
+      };
+    } else {
+      const newProduct = new Products({
+        metaHead: data?.metaHead,
+        metaDesc: data?.metaDesc,
+        title: data?.title,
+        description: data?.description,
+        catagory: data?.catagory,
+        unitValue: data?.unitValue,
+      });
+      let result = await newProduct.save();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: "New product saved!",
+      };
+    }
+  } catch (error) {
     return {
       ...processhandler?.returnJSONfailure,
-      msg: "Missing keys: {productId}",
+      msg: `Error: ${error}`,
     };
-  } else {
+  }
+};
+
+module.exports.GetAllProducts = async () => {
+  const returnArr = await Products.find();
+  return {
+    ...processhandler?.returnJSONsuccess,
+    returnData: returnArr,
+    msg: "Process done successfully!",
+  };
+};
+
+module.exports.GetProductDetails = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (!this.voidCheck(data?.productId)) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId}",
+      };
+    } else {
+      const returnResponse = new Promise((resolve, reject) => {
+        Products.findById(data?.productId, (err, product) => {
+          if (err) {
+            resolve({
+              ...processhandler?.returnJSONfailure,
+              msg: `Error: ${err}`,
+            });
+          } else {
+            if (product === null) {
+              resolve({
+                ...processhandler?.returnJSONfailure,
+                msg: `Product not found!`,
+              });
+            } else {
+              resolve({
+                ...processhandler?.returnJSONsuccess,
+                returnData: product,
+                msg: "Data fetched successfully!",
+              });
+            }
+          }
+        });
+      });
+      return returnResponse;
+    }
+  } catch (error) {
     return {
-      ...processhandler?.returnJSONsuccess,
-      returnData: {
-        metaTitle: `Product ${data?.productId}`,
-        metaDetails: `Product ${data?.productId}`,
-        id: data?.productId,
-      },
-      msg: "Data fetched successfully!",
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
     };
   }
 };
