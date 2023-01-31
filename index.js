@@ -5,7 +5,6 @@ const mongoose = require("mongoose");
 const processhandler = require("./processhandler");
 const utilfunctions = require("./utilfunctions");
 const imageUpload = require("./imageUpload");
-const ip = require("ip");
 
 const app = express();
 app.set("trust proxy", true);
@@ -23,9 +22,7 @@ mongoose
     console.log("Database Connected");
   })
   .catch((err) => {
-    console.log("error in DB", err);
-    let ipAddress = ip?.address();
-    console.log(`ip address ${ipAddress}`);
+    console.log("error in DB: ", err);
   });
 
 app.use("/imageUpload", imageUpload);
