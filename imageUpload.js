@@ -35,7 +35,7 @@ router.post("/", (req, res) => {
         });
       }
       let returnArr = req.files.map((i) => {
-        return { ...i, path: i?.path?.replaceAll("\\", "/") };
+        return { ...i, path: i?.filename };
       });
       res.json({
         ...processhandler?.returnJSONsuccess,

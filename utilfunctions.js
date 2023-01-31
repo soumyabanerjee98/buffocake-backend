@@ -465,11 +465,15 @@ module.exports.SaveNewProduct = async (data) => {
       !this.voidCheck(data?.title) ||
       !this.voidCheck(data?.description) ||
       !this.voidCheck(data?.catagory) ||
-      !this.voidCheck(data?.unitValue)
+      !this.voidCheck(data?.unitValue) ||
+      !this.voidCheck(data?.productImage) ||
+      !this.voidCheck(data?.minWeight) ||
+      !this.voidCheck(data?.availableFlavours) ||
+      !this.voidCheck(data?.customOptions)
     ) {
       return {
         ...processhandler?.returnJSONfailure,
-        msg: "Missing keys: {metaHead, metaDesc, title, description, catagory, unitValue}",
+        msg: "Missing keys: {metaHead, metaDesc, title, description, catagory, unitValue, minWeight, productImage, availableFlavours, customOptions}",
       };
     } else {
       const newProduct = new Products({
@@ -479,6 +483,10 @@ module.exports.SaveNewProduct = async (data) => {
         description: data?.description,
         catagory: data?.catagory,
         unitValue: data?.unitValue,
+        minWeight: data?.minWeight,
+        productImage: data?.productImage,
+        availableFlavours: data?.availableFlavours,
+        customOptions: data?.customOptions,
       });
       let result = await newProduct.save();
       return {

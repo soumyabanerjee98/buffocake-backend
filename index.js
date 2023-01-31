@@ -22,6 +22,7 @@ mongoose
   .catch((err) => console.log("error in DB", err));
 
 app.use("/imageUpload", imageUpload);
+app.use(express.static(__dirname + "/media/photos"));
 
 app.post("/", async (req, res) => {
   let json = {};
