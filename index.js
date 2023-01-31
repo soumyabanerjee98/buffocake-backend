@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const processhandler = require("./processhandler");
 const utilfunctions = require("./utilfunctions");
 const imageUpload = require("./imageUpload");
+const ip = require("ip");
 
 const app = express();
 app.set("trust proxy", true);
@@ -18,8 +19,14 @@ const port = process.env.PORT;
 mongoose.set("strictQuery", false);
 mongoose
   .connect(process.env.DB_URL)
-  .then(() => console.log("Database Connected"))
-  .catch((err) => console.log("error in DB", err));
+  .then(() => {
+    console.log("Database Connected");
+  })
+  .catch((err) => {
+    console.log("error in DB", err);
+    let ipAddress = ip?.address();
+    console.log(`ip address ${ipAddress}`);
+  });
 
 app.use("/imageUpload", imageUpload);
 app.use(express.static(__dirname + "/media/photos"));
