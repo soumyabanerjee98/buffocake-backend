@@ -5,6 +5,7 @@ const PaytmChecksum = require("paytmchecksum");
 const jwt = require("jsonwebtoken");
 const Users = require("./models/Users");
 const Products = require("./models/Products");
+const Wishlists = require("./models/Wishlist");
 
 dotenv.config();
 
@@ -546,6 +547,134 @@ module.exports.GetProductDetails = async (data) => {
         });
       });
       return returnResponse;
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
+    };
+  }
+};
+
+module.exports.AddToWishlist = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (!this.voidCheck(data?.userId) || !this.voidCheck(data?.itemId)) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {userId, itemId}",
+      };
+    } else {
+      let findWishlist = await Wishlists.findOne({ userId: data?.userId });
+      if (findWishlist === null) {
+        const newWishlist = new Wishlists({
+          userId: data?.userId,
+          wishList: [data?.itemId],
+        });
+        let result = await newWishlist.save();
+        return {
+          ...processhandler?.returnJSONsuccess,
+          returnData: result,
+          msg: "Item added to wishlist!",
+        };
+      } else {
+        let wishlistArray = findWishlist?.wishList;
+        let updatedArray = [...wishlistArray, data?.itemId];
+        let result = await Wishlists.updateOne(
+          { userId: data?.userId },
+          {
+            $set: {
+              wishList: updatedArray,
+            },
+          }
+        );
+        return {
+          ...processhandler?.returnJSONsuccess,
+          returnData: result,
+          msg: "Item added to wishlist!",
+        };
+      }
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
+    };
+  }
+};
+
+module.exports.RemoveFromWishlist = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (!this.voidCheck(data?.userId) || !this.voidCheck(data?.itemId)) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {userId, itemId}",
+      };
+    } else {
+      let findWishlist = await Wishlists.findOne({ userId: data?.userId });
+      if (findWishlist === null) {
+        return {
+          ...processhandler?.returnJSONfailure,
+          msg: "No wishlist found!",
+        };
+      } else {
+        let wishlistArray = findWishlist?.wishList;
+        if (wishlistArray?.length === 1) {
+          const deletedWishlist = await Wishlists.deleteOne({
+            userId: data?.userId,
+          });
+          return {
+            ...processhandler?.returnJSONsuccess,
+            returnData: deletedWishlist,
+            msg: "Deleted wishlist!",
+          };
+        } else {
+          let updatedArray = wishlistArray.filter((i) => {
+            return i !== data?.itemId;
+          });
+          let result = await Wishlists.updateOne(
+            { userId: data?.userId },
+            {
+              $set: {
+                wishList: updatedArray,
+              },
+            }
+          );
+          return {
+            ...processhandler?.returnJSONsuccess,
+            returnData: result,
+            msg: "Item removed from wishlist!",
+          };
+        }
+      }
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
+    };
+  }
+};
+
+module.exports.GetWishlist = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (!this.voidCheck(data?.userId)) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {userId}",
+      };
+    } else {
+      const wishlist = await Wishlists.findOne({ userId: data?.userId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: wishlist?.wishList,
+        msg: "Wishlist fetched successfully!",
+      };
     }
   } catch (error) {
     return {
