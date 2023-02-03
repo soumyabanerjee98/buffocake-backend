@@ -27,23 +27,36 @@ const ProductSchema = new mongoose.Schema({
   },
   productImage: {
     type: String,
-    required: true,
     default: null,
   },
   minWeight: {
     type: Number,
-    required: true,
     default: 1,
   },
-  availableFlavours: {
-    type: Array,
-    required: true,
-    default: [],
-  },
-  customOptions: {
-    type: Array,
-    default: [],
-  },
+  availableFlavours: [
+    {
+      flavour: {
+        type: String,
+        required: true,
+      },
+      value: {
+        type: Number,
+        required: true,
+      },
+    },
+  ],
+  customOptions: [
+    {
+      option: {
+        type: String,
+        required: true,
+      },
+      value: {
+        type: Number,
+        required: true,
+      },
+    },
+  ],
 });
 
 module.exports = mongoose.model("Products", ProductSchema);
