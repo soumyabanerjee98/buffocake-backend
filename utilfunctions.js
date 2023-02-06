@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const Users = require("./models/Users");
 const Products = require("./models/Products");
 const Wishlists = require("./models/Wishlist");
+const { unlink } = require("fs/promises");
 
 dotenv.config();
 
@@ -357,6 +358,83 @@ module.exports.CreateAccount = async (data) => {
     return {
       ...processhandler?.returnJSONfailure,
       msg: `Error: ${error.message}`,
+    };
+  }
+};
+
+module.exports.UpdateUser = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.id) ||
+      !this.voidCheck(data?.firstName) ||
+      !this.voidCheck(data?.lastName) ||
+      !this.voidCheck(data?.phoneNumber) ||
+      !this.voidCheck(data?.email)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {id, firstName, lastName, phoneNumber, email}",
+      };
+    } else {
+      let result = await Users.updateOne(
+        { _id: data?.id },
+        {
+          $set: {
+            firstName: data?.firstName,
+            lastName: data?.lastName,
+            phoneNumber: data?.phoneNumber,
+            email: data?.email,
+            profilePhoto: data?.profilePhoto,
+          },
+        }
+      );
+      let profile = await Users.findOne({ _id: data?.id });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: {
+          result: result,
+          profile: {
+            id: profile?._id,
+            firstName: profile?.firstName,
+            lastName: profile?.lastName,
+            email: profile?.email,
+            phoneNumber: profile?.phoneNumber,
+            profilePhoto: profile?.profilePhoto,
+          },
+        },
+        msg: "User updated!",
+      };
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
+    };
+  }
+};
+
+module.exports.DeletePhoto = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (!this.voidCheck(data?.mediaPath)) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {mediaPath}",
+      };
+    }
+    let result = await unlink(__dirname + "/media/photos/" + data?.mediaPath);
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnData: result,
+      msg: `Successfully deleted ${data?.mediaPath}`,
+    };
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
     };
   }
 };

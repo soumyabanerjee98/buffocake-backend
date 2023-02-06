@@ -26,6 +26,12 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
     case "create-new-account":
       return utilfunctions?.CreateAccount(data_json);
       break;
+    case "update-user":
+      return utilfunctions?.UpdateUser(data_json);
+      break;
+    case "delete-photo":
+      return utilfunctions?.DeletePhoto(data_json);
+      break;
     case "paytm-transaction-token-generate":
       return utilfunctions?.TransactionTokenGenerate(data_json);
       break;
