@@ -2,6 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const router = express.Router();
 const processhandler = require("./processhandler");
+const fs = require("fs");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -22,6 +23,10 @@ const upload = multer({ storage: storage }).array("files");
 
 router.post("/", (req, res) => {
   try {
+    let dir = __dirname + "/media/photos";
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir);
+    }
     upload(req, res, (err) => {
       if (err instanceof multer.MulterError) {
         res.json({
