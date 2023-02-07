@@ -2,7 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const router = express.Router();
 const processhandler = require("./processhandler");
-const fs = require("node:fs");
+const fs = require("fs");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
