@@ -25,7 +25,7 @@ router.post("/", (req, res) => {
   try {
     let dir = __dirname + "/media/photos";
     if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir);
+      fs.mkdirSync(dir, { recursive: true });
     }
     upload(req, res, (err) => {
       if (err instanceof multer.MulterError) {
