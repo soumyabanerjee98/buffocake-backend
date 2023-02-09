@@ -415,6 +415,71 @@ module.exports.UpdateUser = async (data) => {
   }
 };
 
+module.exports.ChangePassword = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (
+    !this.voidCheck(data?.id) ||
+    !this.voidCheck(data?.oldPass) ||
+    !this.voidCheck(data?.newPass)
+  ) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {id, oldPass, newPass}",
+    };
+  } else {
+    let user = await Users.findById(data?.id);
+    if (user?.password === data?.oldPass) {
+      let result = await Users.updateOne(
+        { _id: data?.id },
+        {
+          $set: {
+            password: data?.newPass,
+          },
+        }
+      );
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: "Password updated!",
+      };
+    } else {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Invalid Password!",
+      };
+    }
+  }
+};
+
+module.exports.ForgotPassword = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (
+    !this.voidCheck(data?.phoneNumber) ||
+    !this.voidCheck(data?.newPass)
+  ) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {phoneNumber, newPass}",
+    };
+  } else {
+    let result = await Users.updateOne(
+      { phoneNumber: data?.phoneNumber },
+      {
+        $set: {
+          password: data?.newPass,
+        },
+      }
+    );
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnData: result,
+      msg: "Password updated!",
+    };
+  }
+};
+
 module.exports.DeletePhoto = async (data) => {
   try {
     if (!this.voidCheck(data)) {
