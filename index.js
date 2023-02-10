@@ -18,6 +18,7 @@ app.use(
 dotenv.config();
 
 const port = process.env.PORT;
+const env = process.env.ENV;
 
 mongoose.set("strictQuery", false);
 mongoose
@@ -49,5 +50,5 @@ app.post("/", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Server running on port ${port}\nEnv: ${env}`);
 });
