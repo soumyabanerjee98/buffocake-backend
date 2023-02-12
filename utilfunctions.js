@@ -547,7 +547,7 @@ module.exports.TransactionTokenGenerate = async (data) => {
       const requestAsyncFunc = () => {
         return new Promise((resolve, reject) => {
           var options = {
-            hostname: "securegw.paytm.in",
+            hostname: process.env.PAYTM_HOST,
             port: 443,
             path: `/theia/api/v1/initiateTransaction?mid=${data?.mid}&orderId=${data?.oid}`,
             method: "POST",
