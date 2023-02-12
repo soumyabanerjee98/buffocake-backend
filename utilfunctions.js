@@ -527,7 +527,7 @@ module.exports.TransactionTokenGenerate = async (data) => {
         mid: data?.mid,
         websiteName: process.env.WEBSITE_NAME,
         orderId: data?.oid?.toString(),
-        // callbackUrl: process.env.PAYTM_CALLBACK_URL,
+        callbackUrl: process.env.PAYTM_CALLBACK_URL,
         txnAmount: {
           value: data?.value?.toString(),
           currency: "INR",
