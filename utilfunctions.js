@@ -521,7 +521,7 @@ module.exports.TransactionTokenGenerate = async (data) => {
         msg: "Please check datajson, required keys {mid, mkey, oid, value, userId}",
       };
     } else {
-      var paytmParams = {};
+      let paytmParams = {};
       paytmParams.body = {
         requestType: "Payment",
         mid: data?.mid,
@@ -543,10 +543,10 @@ module.exports.TransactionTokenGenerate = async (data) => {
       paytmParams.head = {
         signature: checksum,
       };
-      var post_data = JSON.stringify(paytmParams);
+      let post_data = JSON.stringify(paytmParams);
       const requestAsyncFunc = () => {
         return new Promise((resolve, reject) => {
-          var options = {
+          let options = {
             hostname: process.env.PAYTM_HOST,
             port: 443,
             path: `/theia/api/v1/initiateTransaction?mid=${data?.mid}&orderId=${data?.oid}`,
@@ -557,8 +557,8 @@ module.exports.TransactionTokenGenerate = async (data) => {
             },
           };
 
-          var response = "";
-          var post_req = https.request(options, function (post_res) {
+          let response = "";
+          let post_req = https.request(options, function (post_res) {
             post_res.on("data", function (chunk) {
               response += chunk;
             });
@@ -589,6 +589,80 @@ module.exports.TransactionTokenGenerate = async (data) => {
       }
 
       return returnResponse;
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      returnData: error?.message,
+      msg: "Something went wrong!",
+    };
+  }
+};
+
+module.exports.TransactionVerify = async (data) => {
+  try {
+    let returnResponse = null;
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.mid) ||
+      !this.voidCheck(data?.oid) ||
+      !this.voidCheck(data?.mkey)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Please check datajson, required keys {mid, oid, mkey}",
+      };
+    } else {
+      let paytmParams = {};
+      paytmParams.body = {
+        mid: data?.mid,
+        orderId: data?.oid,
+      };
+      const checksum = await PaytmChecksum.generateSignature(
+        JSON.stringify(paytmParams.body),
+        data?.mkey
+      );
+      paytmParams.head = {
+        signature: checksum,
+      };
+      let post_data = JSON.stringify(paytmParams);
+      const requestAsyncFunc = () => {
+        return new Promise((resolve, reject) => {
+          let options = {
+            hostname: process.env.PAYTM_HOST,
+            port: 443,
+            path: "/v3/order/status",
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Content-Length": post_data.length,
+            },
+          };
+
+          let response = "";
+          let post_req = https.request(options, function (post_res) {
+            post_res.on("data", function (chunk) {
+              response += chunk;
+            });
+
+            post_res.on("end", function () {
+              // console.log("Response: ", response);
+              resolve(JSON.parse(response).body);
+            });
+          });
+
+          post_req.write(post_data);
+          post_req.end();
+        });
+      };
+      let myResponse = await requestAsyncFunc();
+      returnResponse = myResponse;
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: returnResponse,
+        msg: "Process completed successfully!",
+      };
     }
   } catch (error) {
     return {
