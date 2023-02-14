@@ -777,17 +777,27 @@ module.exports.AddToWishlist = async (data) => {
   try {
     if (!this.voidCheck(data)) {
       return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
-    } else if (!this.voidCheck(data?.userId) || !this.voidCheck(data?.itemId)) {
+    } else if (
+      !this.voidCheck(data?.userId) ||
+      !this.voidCheck(data?.productId)
+    ) {
       return {
         ...processhandler?.returnJSONfailure,
-        msg: "Missing keys: {userId, itemId}",
+        msg: "Missing keys: {userId, productId}",
       };
     } else {
       let findWishlist = await Wishlists.findOne({ userId: data?.userId });
+      let itemDetails = await Products.findById(data?.productId);
       if (findWishlist === null) {
         const newWishlist = new Wishlists({
           userId: data?.userId,
-          wishList: [data?.itemId],
+          wishList: [
+            {
+              productId: itemDetails?._id,
+              productTitle: itemDetails?.title,
+              productImage: itemDetails?.productImage,
+            },
+          ],
         });
         let result = await newWishlist.save();
         return {
@@ -796,13 +806,15 @@ module.exports.AddToWishlist = async (data) => {
           msg: "Item added to wishlist!",
         };
       } else {
-        let wishlistArray = findWishlist?.wishList;
-        let updatedArray = [...wishlistArray, data?.itemId];
         let result = await Wishlists.updateOne(
           { userId: data?.userId },
           {
-            $set: {
-              wishList: updatedArray,
+            $push: {
+              wishList: {
+                productId: itemDetails?._id,
+                productTitle: itemDetails?.title,
+                productImage: itemDetails?.productImage,
+              },
             },
           }
         );
@@ -825,10 +837,13 @@ module.exports.RemoveFromWishlist = async (data) => {
   try {
     if (!this.voidCheck(data)) {
       return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
-    } else if (!this.voidCheck(data?.userId) || !this.voidCheck(data?.itemId)) {
+    } else if (
+      !this.voidCheck(data?.userId) ||
+      !this.voidCheck(data?.productId)
+    ) {
       return {
         ...processhandler?.returnJSONfailure,
-        msg: "Missing keys: {userId, itemId}",
+        msg: "Missing keys: {userId, productId}",
       };
     } else {
       let findWishlist = await Wishlists.findOne({ userId: data?.userId });
@@ -840,29 +855,29 @@ module.exports.RemoveFromWishlist = async (data) => {
       } else {
         let wishlistArray = findWishlist?.wishList;
         if (wishlistArray?.length === 1) {
-          const deletedWishlist = await Wishlists.deleteOne({
+          await Wishlists.deleteOne({
             userId: data?.userId,
           });
           return {
             ...processhandler?.returnJSONsuccess,
-            returnData: deletedWishlist,
+            returnData: [],
             msg: "Deleted wishlist!",
           };
         } else {
-          let updatedArray = wishlistArray.filter((i) => {
-            return i !== data?.itemId;
-          });
-          let result = await Wishlists.updateOne(
+          await Wishlists.updateOne(
             { userId: data?.userId },
             {
-              $set: {
-                wishList: updatedArray,
+              $pull: {
+                wishList: { productId: data?.productId },
               },
             }
           );
+          let result = await Wishlists.findOne({
+            userId: data?.userId,
+          });
           return {
             ...processhandler?.returnJSONsuccess,
-            returnData: result,
+            returnData: result?.wishList,
             msg: "Item removed from wishlist!",
           };
         }
@@ -887,11 +902,19 @@ module.exports.GetWishlist = async (data) => {
       };
     } else {
       const wishlist = await Wishlists.findOne({ userId: data?.userId });
-      return {
-        ...processhandler?.returnJSONsuccess,
-        returnData: wishlist?.wishList,
-        msg: "Wishlist fetched successfully!",
-      };
+      if (wishlist) {
+        return {
+          ...processhandler?.returnJSONsuccess,
+          returnData: wishlist?.wishList,
+          msg: "Wishlist fetched successfully!",
+        };
+      } else {
+        return {
+          ...processhandler?.returnJSONsuccess,
+          returnData: null,
+          msg: "No wishlist found!",
+        };
+      }
     }
   } catch (error) {
     return {

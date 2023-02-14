@@ -5,11 +5,21 @@ const WishlistSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  wishList: {
-    type: Array,
-    required: true,
-    default: [],
-  },
+  wishList: [
+    {
+      productId: {
+        type: String,
+        required: true,
+      },
+      productTitle: {
+        type: String,
+        required: true,
+      },
+      productImage: {
+        type: String,
+      },
+    },
+  ],
 });
 
 module.exports = mongoose.model("Wishlists", WishlistSchema);
