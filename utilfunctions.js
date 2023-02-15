@@ -7,6 +7,7 @@ const Users = require("./models/Users");
 const Products = require("./models/Products");
 const Wishlists = require("./models/Wishlist");
 const { unlink } = require("fs/promises");
+const Carts = require("./models/Carts");
 
 dotenv.config();
 
@@ -913,6 +914,181 @@ module.exports.GetWishlist = async (data) => {
           ...processhandler?.returnJSONsuccess,
           returnData: null,
           msg: "No wishlist found!",
+        };
+      }
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
+    };
+  }
+};
+
+module.exports.AddToCart = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.userId) ||
+      !this.voidCheck(data?.productId) ||
+      !this.voidCheck(data?.qty) ||
+      !this.voidCheck(data?.weight) ||
+      !this.voidCheck(data?.flavour) ||
+      !this.voidCheck(data?.custom) ||
+      !this.voidCheck(data?.message) ||
+      !this.voidCheck(data?.allergy) ||
+      !this.voidCheck(data?.delDate) ||
+      !this.voidCheck(data?.delTime) ||
+      !this.voidCheck(data?.subTotal)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {userId, productId, qty, weight, flavour, custom, message, allergy, delDate, delTime, subTotal}",
+      };
+    } else {
+      let product = await Products.findById(data?.productId);
+      let productImage = product?.productImage;
+      const cart = await Carts.findOne({ userId: data?.userId });
+      if (cart) {
+        await Carts.updateOne(
+          { userId: data?.userId },
+          {
+            $push: {
+              cart: {
+                productId: data?.productId,
+                productImage: productImage,
+                qty: data?.qty,
+                weight: data?.weight,
+                flavour: data?.flavour,
+                custom: data?.custom,
+                message: data?.message,
+                allergy: data?.allergy,
+                delDate: data?.delDate,
+                delTime: data?.delTime,
+                subTotal: data?.subTotal,
+              },
+            },
+          }
+        );
+        const updatedCart = await Carts.findOne({ userId: data?.userId });
+        return {
+          ...processhandler?.returnJSONsuccess,
+          returnData: updatedCart?.cart,
+          msg: "Item added to cart!",
+        };
+      } else {
+        const newCart = new Carts({
+          userId: data?.userId,
+          cart: [
+            {
+              productId: data?.productId,
+              productImage: productImage,
+              qty: data?.qty,
+              weight: data?.weight,
+              flavour: data?.flavour,
+              custom: data?.custom,
+              message: data?.message,
+              allergy: data?.allergy,
+              delDate: data?.delDate,
+              delTime: data?.delTime,
+              subTotal: data?.subTotal,
+            },
+          ],
+        });
+        let result = await newCart.save();
+        return {
+          ...processhandler?.returnJSONsuccess,
+          returnData: result,
+          msg: "Item added to cart!",
+        };
+      }
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error.message}`,
+    };
+  }
+};
+
+module.exports.RemoveFromCart = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (!this.voidCheck(data?.userId) || !this.voidCheck(data?.cartId)) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {userId, cartId}",
+      };
+    } else {
+      let findCart = await Carts.findOne({ userId: data?.userId });
+      if (findCart === null) {
+        return {
+          ...processhandler?.returnJSONfailure,
+          msg: "No Cart found!",
+        };
+      } else {
+        let cartArray = findCart?.cart;
+        if (cartArray?.length === 1) {
+          await Carts.deleteOne({
+            userId: data?.userId,
+          });
+          return {
+            ...processhandler?.returnJSONsuccess,
+            returnData: [],
+            msg: "Deleted cart!",
+          };
+        } else {
+          await Carts.updateOne(
+            { userId: data?.userId },
+            {
+              $pull: {
+                cart: { _id: data?.cartId },
+              },
+            }
+          );
+          let result = await Carts.findOne({
+            userId: data?.userId,
+          });
+          return {
+            ...processhandler?.returnJSONsuccess,
+            returnData: result?.cart,
+            msg: "Item removed from cart!",
+          };
+        }
+      }
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
+    };
+  }
+};
+
+module.exports.GetCart = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (!this.voidCheck(data?.userId)) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {userId}",
+      };
+    } else {
+      const cart = await Carts.findOne({ userId: data?.userId });
+      if (cart) {
+        return {
+          ...processhandler?.returnJSONsuccess,
+          returnData: cart?.cart,
+          msg: "Cart fetched successfully!",
+        };
+      } else {
+        return {
+          ...processhandler?.returnJSONsuccess,
+          returnData: null,
+          msg: "No cart found!",
         };
       }
     }

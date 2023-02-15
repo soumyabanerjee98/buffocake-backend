@@ -62,6 +62,15 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
     case "get-wishlist":
       return utilfunctions?.GetWishlist(data_json);
       break;
+    case "add-item-to-cart":
+      return utilfunctions?.AddToCart(data_json);
+      break;
+    case "remove-item-from-cart":
+      return utilfunctions?.RemoveFromCart(data_json);
+      break;
+    case "get-cart":
+      return utilfunctions?.GetCart(data_json);
+      break;
     default:
       return { ...this.returnJSONfailure, msg: "No Process Id found" };
       break;

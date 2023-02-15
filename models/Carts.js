@@ -25,25 +25,21 @@ const CartSchema = new mongoose.Schema({
       },
       flavour: {
         type: String,
-        required: true,
       },
       custom: {
         type: String,
-        required: true,
       },
       message: {
         type: String,
-        required: true,
       },
       allergy: {
         type: String,
-        required: true,
       },
-      del_date: {
+      delDate: {
         type: String,
         required: true,
       },
-      del_time: {
+      delTime: {
         type: String,
         required: true,
       },
