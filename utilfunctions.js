@@ -8,6 +8,7 @@ const Products = require("./models/Products");
 const Wishlists = require("./models/Wishlist");
 const { unlink } = require("fs/promises");
 const Carts = require("./models/Carts");
+const Address = require("./models/Address");
 
 dotenv.config();
 
@@ -416,6 +417,128 @@ module.exports.UpdateUser = async (data) => {
   }
 };
 
+module.exports.AddAddress = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (
+    !this.voidCheck(data?.userId) ||
+    !this.voidCheck(data?.room) ||
+    !this.voidCheck(data?.street) ||
+    !this.voidCheck(data?.pin) ||
+    !this.voidCheck(data?.favorite)
+  ) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {userId, room, street, pin, favorite}",
+    };
+  } else {
+    let findAddress = await Address.findOne({ userId: data?.userId });
+    if (findAddress) {
+      await Address.updateOne(
+        { userId: data?.userId },
+        {
+          $push: {
+            address: {
+              room: data?.room,
+              street: data?.street,
+              pin: data?.pin,
+              favorite: data?.favorite,
+            },
+          },
+        }
+      );
+      let result = await Address.findOne({ userId: data?.userId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result?.address,
+        msg: "Address added!",
+      };
+    } else {
+      const newAddress = new Address({
+        userId: data?.userId,
+        address: [
+          {
+            room: data?.room,
+            street: data?.street,
+            pin: data?.pin,
+            favorite: data?.favorite,
+          },
+        ],
+      });
+      let result = await newAddress.save();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result?.address,
+        msg: "Address added!",
+      };
+    }
+  }
+};
+
+module.exports.RemoveAddress = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (
+    !this.voidCheck(data?.userId) ||
+    !this.voidCheck(data?.addressId)
+  ) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {userId, addressId}",
+    };
+  } else {
+    let findAddress = await Address.findOne({ userId: data?.userId });
+    if (findAddress?.address?.length === 1) {
+      await Address.deleteOne({ userId: data?.userId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: [],
+        msg: "Address removed!",
+      };
+    } else {
+      await Address.updateOne(
+        { userId: data?.userId },
+        {
+          $pull: {
+            address: { _id: data?.addressId },
+          },
+        }
+      );
+      let address = await Address.findOne({ userId: data?.userId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: address?.address,
+        msg: "Address removed!",
+      };
+    }
+  }
+};
+
+module.exports.GetAddress = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (!this.voidCheck(data?.userId)) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {userId}",
+    };
+  } else {
+    let address = await Address.findOne({ userId: data?.userId });
+    if (address) {
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: address?.address,
+        msg: "Address fetched successfully!",
+      };
+    } else {
+      return {
+        ...processhandler?.returnJSONsuccess,
+        msg: "No address found!",
+      };
+    }
+  }
+};
+
 module.exports.ChangePassword = async (data) => {
   if (!this.voidCheck(data)) {
     return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
@@ -803,11 +926,11 @@ module.exports.AddToWishlist = async (data) => {
         let result = await newWishlist.save();
         return {
           ...processhandler?.returnJSONsuccess,
-          returnData: result,
+          returnData: result?.wishList,
           msg: "Item added to wishlist!",
         };
       } else {
-        let result = await Wishlists.updateOne(
+        await Wishlists.updateOne(
           { userId: data?.userId },
           {
             $push: {
@@ -819,9 +942,10 @@ module.exports.AddToWishlist = async (data) => {
             },
           }
         );
+        let result = await Wishlists.findOne({ userId: data?.userId });
         return {
           ...processhandler?.returnJSONsuccess,
-          returnData: result,
+          returnData: result?.wishList,
           msg: "Item added to wishlist!",
         };
       }
@@ -948,7 +1072,6 @@ module.exports.AddToCart = async (data) => {
       };
     } else {
       let product = await Products.findById(data?.productId);
-      let productImage = product?.productImage;
       const cart = await Carts.findOne({ userId: data?.userId });
       if (cart) {
         await Carts.updateOne(
@@ -957,7 +1080,8 @@ module.exports.AddToCart = async (data) => {
             $push: {
               cart: {
                 productId: data?.productId,
-                productImage: productImage,
+                productName: product?.title,
+                productImage: product?.productImage,
                 qty: data?.qty,
                 weight: data?.weight,
                 flavour: data?.flavour,
@@ -983,7 +1107,8 @@ module.exports.AddToCart = async (data) => {
           cart: [
             {
               productId: data?.productId,
-              productImage: productImage,
+              productName: product?.title,
+              productImage: product?.productImage,
               qty: data?.qty,
               weight: data?.weight,
               flavour: data?.flavour,
@@ -999,7 +1124,7 @@ module.exports.AddToCart = async (data) => {
         let result = await newCart.save();
         return {
           ...processhandler?.returnJSONsuccess,
-          returnData: result,
+          returnData: result?.cart,
           msg: "Item added to cart!",
         };
       }
