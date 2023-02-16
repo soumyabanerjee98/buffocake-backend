@@ -1,76 +1,79 @@
 const utilfunctions = require("./utilfunctions");
+
 module.exports.ProcessIdHandler = async (process_id, data_json) => {
-  const processIdArray = [
-    { key: "phone-verify", value: utilfunctions?.PhoneVerify(data_json) },
-    { key: "otp-verify", value: utilfunctions?.OTPVerify(data_json) },
-    { key: "verify-login-token", value: utilfunctions?.VerifyToken(data_json) },
-    {
-      key: "user-login-with-phone",
-      value: utilfunctions?.LoginUserWithPhone(data_json),
-    },
-    {
-      key: "user-login-with-email",
-      value: utilfunctions?.LoginUserWithEmail(data_json),
-    },
-    {
-      key: "user-phone-check",
-      value: utilfunctions?.CheckUserPhone(data_json),
-    },
-    {
-      key: "user-email-check",
-      value: utilfunctions?.CheckUserEmail(data_json),
-    },
-    {
-      key: "create-new-account",
-      value: utilfunctions?.CreateAccount(data_json),
-    },
-    { key: "update-user", value: utilfunctions?.UpdateUser(data_json) },
-    { key: "change-password", value: utilfunctions?.ChangePassword(data_json) },
-    { key: "forgot-password", value: utilfunctions?.ForgotPassword(data_json) },
-    { key: "delete-photo", value: utilfunctions?.DeletePhoto(data_json) },
-    {
-      key: "paytm-transaction-token-generate",
-      value: utilfunctions?.TransactionTokenGenerate(data_json),
-    },
-    {
-      key: "paytm-transaction-verify",
-      value: utilfunctions?.TransactionVerify(data_json),
-    },
-    {
-      key: "get-all-products",
-      value: utilfunctions?.GetAllProducts(data_json),
-    },
-    {
-      key: "save-new-product",
-      value: utilfunctions?.SaveNewProduct(data_json),
-    },
-    {
-      key: "get-product-details",
-      value: utilfunctions?.GetProductDetails(data_json),
-    },
-    {
-      key: "add-item-to-wishlist",
-      value: utilfunctions?.AddToWishlist(data_json),
-    },
-    {
-      key: "remove-item-from-wishlist",
-      value: utilfunctions?.RemoveFromWishlist(data_json),
-    },
-    { key: "get-wishlist", value: utilfunctions?.GetWishlist(data_json) },
-    { key: "add-item-to-cart", value: utilfunctions?.AddToCart(data_json) },
-    {
-      key: "remove-item-from-cart",
-      value: utilfunctions?.RemoveFromCart(data_json),
-    },
-    { key: "get-cart", value: utilfunctions?.GetCart(data_json) },
-  ];
-  const processFunc = processIdArray.find((i) => {
-    return i?.key === process_id;
-  });
-  if (processFunc) {
-    return processFunc.value;
-  } else {
-    return { ...this.returnJSONfailure, msg: "No Process Id found" };
+  switch (process_id) {
+    case "phone-verify":
+      return utilfunctions?.PhoneVerify(data_json);
+      break;
+    case "otp-verify":
+      return utilfunctions?.OTPVerify(data_json);
+      break;
+    case "verify-login-token":
+      return utilfunctions?.VerifyToken(data_json);
+      break;
+    case "user-login-with-phone":
+      return utilfunctions?.LoginUserWithPhone(data_json);
+      break;
+    case "user-login-with-email":
+      return utilfunctions?.LoginUserWithEmail(data_json);
+      break;
+    case "user-phone-check":
+      return utilfunctions?.CheckUserPhone(data_json);
+      break;
+    case "user-email-check":
+      return utilfunctions?.CheckUserEmail(data_json);
+      break;
+    case "create-new-account":
+      return utilfunctions?.CreateAccount(data_json);
+      break;
+    case "update-user":
+      return utilfunctions?.UpdateUser(data_json);
+      break;
+    case "change-password":
+      return utilfunctions?.ChangePassword(data_json);
+      break;
+    case "forgot-password":
+      return utilfunctions?.ForgotPassword(data_json);
+      break;
+    case "delete-photo":
+      return utilfunctions?.DeletePhoto(data_json);
+      break;
+    case "paytm-transaction-token-generate":
+      return utilfunctions?.TransactionTokenGenerate(data_json);
+      break;
+    case "paytm-transaction-verify":
+      return utilfunctions?.TransactionVerify(data_json);
+      break;
+    case "get-all-products":
+      return utilfunctions?.GetAllProducts();
+      break;
+    case "save-new-product":
+      return utilfunctions?.SaveNewProduct(data_json);
+      break;
+    case "get-product-details":
+      return utilfunctions?.GetProductDetails(data_json);
+      break;
+    case "add-item-to-wishlist":
+      return utilfunctions?.AddToWishlist(data_json);
+      break;
+    case "remove-item-from-wishlist":
+      return utilfunctions?.RemoveFromWishlist(data_json);
+      break;
+    case "get-wishlist":
+      return utilfunctions?.GetWishlist(data_json);
+      break;
+    case "add-item-to-cart":
+      return utilfunctions?.AddToCart(data_json);
+      break;
+    case "remove-item-from-cart":
+      return utilfunctions?.RemoveFromCart(data_json);
+      break;
+    case "get-cart":
+      return utilfunctions?.GetCart(data_json);
+      break;
+    default:
+      return { ...this.returnJSONfailure, msg: "No Process Id found" };
+      break;
   }
 };
 
