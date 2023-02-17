@@ -436,35 +436,41 @@ module.exports.AddAddress = async (data) => {
   } else {
     let findAddress = await Address.findOne({ userId: data?.userId });
     if (findAddress) {
-      if (data?.favorite) {
-        await Address.updateOne(
-          { address: { $elemMatch: { favorite: true } } },
-          {
-            $set: {
-              "address.$.favorite": false,
-            },
+      const asyncAddFunc = () => {
+        return new Promise(async (resolve, reject) => {
+          if (data?.favorite) {
+            await Address.updateOne(
+              { address: { $elemMatch: { favorite: true } } },
+              {
+                $set: {
+                  "address.$.favorite": false,
+                },
+              }
+            );
           }
-        );
-      }
-      await Address.updateOne(
-        { userId: data?.userId },
-        {
-          $push: {
-            address: {
-              receiverName: data?.receiverName,
-              receiverContact: data?.receiverContact,
-              house: data?.house?.replaceAll("\n", ", "),
-              street: data?.street?.replaceAll("\n", ", "),
-              pin: data?.pin,
-              favorite: data?.favorite,
-            },
-          },
-        }
-      );
-      let result = await Address.findOne({ userId: data?.userId });
+          await Address.updateOne(
+            { userId: data?.userId },
+            {
+              $push: {
+                address: {
+                  receiverName: data?.receiverName,
+                  receiverContact: data?.receiverContact,
+                  house: data?.house?.replaceAll("\n", ", "),
+                  street: data?.street?.replaceAll("\n", ", "),
+                  pin: data?.pin,
+                  favorite: data?.favorite,
+                },
+              },
+            }
+          );
+          let result = await Address.findOne({ userId: data?.userId });
+          resolve(result?.address);
+        });
+      };
+      let response = await asyncAddFunc();
       return {
         ...processhandler?.returnJSONsuccess,
-        returnData: result?.address,
+        returnData: response,
         msg: "Address added!",
       };
     } else {
@@ -511,33 +517,39 @@ module.exports.EditAddress = async (data) => {
   } else {
     let findAddress = await Address.findOne({ userId: data?.userId });
     if (findAddress) {
-      if (data?.favorite) {
-        await Address.updateOne(
-          { address: { $elemMatch: { favorite: true } } },
-          {
-            $set: {
-              "address.$.favorite": false,
-            },
+      const asyncEditFunc = () => {
+        return new Promise(async (resolve, reject) => {
+          if (data?.favorite) {
+            await Address.updateOne(
+              { address: { $elemMatch: { favorite: true } } },
+              {
+                $set: {
+                  "address.$.favorite": false,
+                },
+              }
+            );
           }
-        );
-      }
-      await Address.updateOne(
-        { address: { $elemMatch: { _id: data?.addressId } } },
-        {
-          $set: {
-            "address.$.receiverName": data?.receiverName,
-            "address.$.receiverContact": data?.receiverContact,
-            "address.$.house": data?.house?.replaceAll("\n", ", "),
-            "address.$.street": data?.street?.replaceAll("\n", ", "),
-            "address.$.pin": data?.pin,
-            "address.$.favorite": data?.favorite,
-          },
-        }
-      );
-      let result = await Address.findOne({ userId: data?.userId });
+          await Address.updateOne(
+            { address: { $elemMatch: { _id: data?.addressId } } },
+            {
+              $set: {
+                "address.$.receiverName": data?.receiverName,
+                "address.$.receiverContact": data?.receiverContact,
+                "address.$.house": data?.house?.replaceAll("\n", ", "),
+                "address.$.street": data?.street?.replaceAll("\n", ", "),
+                "address.$.pin": data?.pin,
+                "address.$.favorite": data?.favorite,
+              },
+            }
+          );
+          let result = await Address.findOne({ userId: data?.userId });
+          resolve(result?.address);
+        });
+      };
+      let response = await asyncEditFunc();
       return {
         ...processhandler?.returnJSONsuccess,
-        returnData: result?.address,
+        returnData: response,
         msg: "Address updated!",
       };
     } else {
