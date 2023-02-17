@@ -7,7 +7,15 @@ const AddressSchema = new mongoose.Schema({
   },
   address: [
     {
-      room: {
+      receiverName: {
+        type: String,
+        required: true,
+      },
+      receiverContact: {
+        type: String,
+        required: true,
+      },
+      house: {
         type: String,
       },
       street: {
