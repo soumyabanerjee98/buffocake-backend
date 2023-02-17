@@ -445,22 +445,38 @@ module.exports.AddAddress = async (data) => {
             },
           }
         );
-      }
-      await Address.updateOne(
-        { userId: data?.userId },
-        {
-          $push: {
-            address: {
-              receiverName: data?.receiverName,
-              receiverContact: data?.receiverContact,
-              house: data?.house?.replaceAll("\n", ", "),
-              street: data?.street?.replaceAll("\n", ", "),
-              pin: data?.pin,
-              favorite: data?.favorite,
+        await Address.updateOne(
+          { userId: data?.userId },
+          {
+            $push: {
+              address: {
+                receiverName: data?.receiverName,
+                receiverContact: data?.receiverContact,
+                house: data?.house?.replaceAll("\n", ", "),
+                street: data?.street?.replaceAll("\n", ", "),
+                pin: data?.pin,
+                favorite: data?.favorite,
+              },
             },
-          },
-        }
-      );
+          }
+        );
+      } else {
+        await Address.updateOne(
+          { userId: data?.userId },
+          {
+            $push: {
+              address: {
+                receiverName: data?.receiverName,
+                receiverContact: data?.receiverContact,
+                house: data?.house?.replaceAll("\n", ", "),
+                street: data?.street?.replaceAll("\n", ", "),
+                pin: data?.pin,
+                favorite: data?.favorite,
+              },
+            },
+          }
+        );
+      }
       let result = await Address.findOne({ userId: data?.userId });
       return {
         ...processhandler?.returnJSONsuccess,
@@ -520,20 +536,34 @@ module.exports.EditAddress = async (data) => {
             },
           }
         );
+        await Address.updateOne(
+          { address: { $elemMatch: { _id: data?.addressId } } },
+          {
+            $set: {
+              "address.$.receiverName": data?.receiverName,
+              "address.$.receiverContact": data?.receiverContact,
+              "address.$.house": data?.house?.replaceAll("\n", ", "),
+              "address.$.street": data?.street?.replaceAll("\n", ", "),
+              "address.$.pin": data?.pin,
+              "address.$.favorite": data?.favorite,
+            },
+          }
+        );
+      } else {
+        await Address.updateOne(
+          { address: { $elemMatch: { _id: data?.addressId } } },
+          {
+            $set: {
+              "address.$.receiverName": data?.receiverName,
+              "address.$.receiverContact": data?.receiverContact,
+              "address.$.house": data?.house?.replaceAll("\n", ", "),
+              "address.$.street": data?.street?.replaceAll("\n", ", "),
+              "address.$.pin": data?.pin,
+              "address.$.favorite": data?.favorite,
+            },
+          }
+        );
       }
-      await Address.updateOne(
-        { address: { $elemMatch: { _id: data?.addressId } } },
-        {
-          $set: {
-            "address.$.receiverName": data?.receiverName,
-            "address.$.receiverContact": data?.receiverContact,
-            "address.$.house": data?.house?.replaceAll("\n", ", "),
-            "address.$.street": data?.street?.replaceAll("\n", ", "),
-            "address.$.pin": data?.pin,
-            "address.$.favorite": data?.favorite,
-          },
-        }
-      );
       let result = await Address.findOne({ userId: data?.userId });
       return {
         ...processhandler?.returnJSONsuccess,
