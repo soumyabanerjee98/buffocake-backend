@@ -459,8 +459,8 @@ module.exports.AddAddress = async (data) => {
                   address: {
                     receiverName: data?.receiverName,
                     receiverContact: data?.receiverContact,
-                    house: data?.house?.replaceAll("\n", ", "),
-                    street: data?.street?.replaceAll("\n", ", "),
+                    house: data?.house,
+                    street: data?.street,
                     pin: data?.pin,
                     favorite: data?.favorite,
                   },
@@ -484,8 +484,8 @@ module.exports.AddAddress = async (data) => {
             {
               receiverName: data?.receiverName,
               receiverContact: data?.receiverContact,
-              house: data?.house?.replaceAll("\n", ", "),
-              street: data?.street?.replaceAll("\n", ", "),
+              house: data?.house,
+              street: data?.street,
               pin: data?.pin,
               favorite: data?.favorite,
             },
@@ -552,8 +552,8 @@ module.exports.EditAddress = async (data) => {
                 $set: {
                   "address.$.receiverName": data?.receiverName,
                   "address.$.receiverContact": data?.receiverContact,
-                  "address.$.house": data?.house?.replaceAll("\n", ", "),
-                  "address.$.street": data?.street?.replaceAll("\n", ", "),
+                  "address.$.house": data?.house,
+                  "address.$.street": data?.street,
                   "address.$.pin": data?.pin,
                   "address.$.favorite": data?.favorite,
                 },
