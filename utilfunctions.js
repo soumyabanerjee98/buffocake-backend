@@ -9,6 +9,7 @@ const Wishlists = require("./models/Wishlist");
 const { unlink } = require("fs/promises");
 const Carts = require("./models/Carts");
 const Address = require("./models/Address");
+const Orders = require("./models/Orders");
 
 dotenv.config();
 
@@ -1308,6 +1309,33 @@ module.exports.RemoveFromCart = async (data) => {
   }
 };
 
+module.exports.ClearCart = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (!this.voidCheck(data?.userId)) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {userId}",
+      };
+    } else {
+      await Carts.deleteOne({
+        userId: data?.userId,
+      });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: [],
+        msg: "Deleted cart!",
+      };
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
+    };
+  }
+};
+
 module.exports.GetCart = async (data) => {
   try {
     if (!this.voidCheck(data)) {
@@ -1338,5 +1366,79 @@ module.exports.GetCart = async (data) => {
       ...processhandler?.returnJSONfailure,
       msg: `Error: ${error}`,
     };
+  }
+};
+
+module.exports.CreateOrder = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.userId) ||
+      !this.voidCheck(data?.oid) ||
+      !this.voidCheck(data?.txnId) ||
+      !this.voidCheck(data?.items) ||
+      !this.voidCheck(data?.shippingAddress) ||
+      !this.voidCheck(data?.total) ||
+      !this.voidCheck(data?.paymentStatus) ||
+      !this.voidCheck(data?.orderStatus) ||
+      !this.voidCheck(data?.orderTimeStamp)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {userId, oid, txnId, items, shippingAddress, total, paymentStatus, orderStatus, orderTimeStamp}",
+      };
+    } else {
+      const newOrder = new Orders({
+        userId: data?.userId,
+        orderId: data?.oid,
+        txnId: data?.txnId,
+        items: data?.items,
+        shippingAddress: data?.shippingAddress,
+        total: data?.total,
+        paymentStatus: data?.paymentStatus,
+        orderStatus: data?.orderStatus,
+        orderTimeStamp: data?.orderTimeStamp,
+      });
+      await newOrder.save();
+      let result = await Orders.find({ userId: data?.userId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: "Order created successfully!",
+      };
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
+    };
+  }
+};
+
+module.exports.UpdateOrder = async (data) => {};
+
+module.exports.GetOrders = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (!this.voidCheck(data?.userId)) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {userId}",
+    };
+  } else {
+    let orders = await Orders.find({ userId: data?.userId });
+    if (orders) {
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: orders,
+        msg: "Orders fetched successfully!",
+      };
+    } else {
+      return {
+        ...processhandler?.returnJSONsuccess,
+        msg: "No orders found!",
+      };
+    }
   }
 };
