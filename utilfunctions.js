@@ -418,185 +418,215 @@ module.exports.UpdateUser = async (data) => {
 };
 
 module.exports.AddAddress = async (data) => {
-  if (!this.voidCheck(data)) {
-    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
-  } else if (
-    !this.voidCheck(data?.userId) ||
-    !this.voidCheck(data?.receiverName) ||
-    !this.voidCheck(data?.receiverContact) ||
-    !this.voidCheck(data?.house) ||
-    !this.voidCheck(data?.street) ||
-    !this.voidCheck(data?.pin) ||
-    !this.voidCheck(data?.favorite)
-  ) {
-    return {
-      ...processhandler?.returnJSONfailure,
-      msg: "Missing keys: {userId, receiverName, receiverContact, house, street, pin, favorite}",
-    };
-  } else {
-    let findAddress = await Address.findOne({ userId: data?.userId });
-    if (findAddress) {
-      const asyncAddFunc = () => {
-        return new Promise(async (resolve, reject) => {
-          if (data?.favorite) {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.userId) ||
+      !this.voidCheck(data?.receiverName) ||
+      !this.voidCheck(data?.receiverContact) ||
+      !this.voidCheck(data?.house) ||
+      !this.voidCheck(data?.street) ||
+      !this.voidCheck(data?.pin) ||
+      !this.voidCheck(data?.favorite)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {userId, receiverName, receiverContact, house, street, pin, favorite}",
+      };
+    } else {
+      let findAddress = await Address.findOne({ userId: data?.userId });
+      if (findAddress) {
+        const asyncAddFunc = () => {
+          return new Promise(async (resolve, reject) => {
+            if (data?.favorite) {
+              await Address.updateOne(
+                {
+                  userId: data?.userId,
+                  address: { $elemMatch: { favorite: true } },
+                },
+                {
+                  $set: {
+                    "address.$.favorite": false,
+                  },
+                }
+              );
+            }
             await Address.updateOne(
-              { address: { $elemMatch: { favorite: true } } },
+              { userId: data?.userId },
               {
-                $set: {
-                  "address.$.favorite": false,
+                $push: {
+                  address: {
+                    receiverName: data?.receiverName,
+                    receiverContact: data?.receiverContact,
+                    house: data?.house?.replaceAll("\n", ", "),
+                    street: data?.street?.replaceAll("\n", ", "),
+                    pin: data?.pin,
+                    favorite: data?.favorite,
+                  },
                 },
               }
             );
-          }
-          await Address.updateOne(
-            { userId: data?.userId },
+            let result = await Address.findOne({ userId: data?.userId });
+            resolve(result?.address);
+          });
+        };
+        let response = await asyncAddFunc();
+        return {
+          ...processhandler?.returnJSONsuccess,
+          returnData: response,
+          msg: "Address added!",
+        };
+      } else {
+        const newAddress = new Address({
+          userId: data?.userId,
+          address: [
             {
-              $push: {
-                address: {
-                  receiverName: data?.receiverName,
-                  receiverContact: data?.receiverContact,
-                  house: data?.house?.replaceAll("\n", ", "),
-                  street: data?.street?.replaceAll("\n", ", "),
-                  pin: data?.pin,
-                  favorite: data?.favorite,
-                },
-              },
-            }
-          );
-          let result = await Address.findOne({ userId: data?.userId });
-          resolve(result?.address);
+              receiverName: data?.receiverName,
+              receiverContact: data?.receiverContact,
+              house: data?.house?.replaceAll("\n", ", "),
+              street: data?.street?.replaceAll("\n", ", "),
+              pin: data?.pin,
+              favorite: data?.favorite,
+            },
+          ],
         });
-      };
-      let response = await asyncAddFunc();
-      return {
-        ...processhandler?.returnJSONsuccess,
-        returnData: response,
-        msg: "Address added!",
-      };
-    } else {
-      const newAddress = new Address({
-        userId: data?.userId,
-        address: [
-          {
-            receiverName: data?.receiverName,
-            receiverContact: data?.receiverContact,
-            house: data?.house?.replaceAll("\n", ", "),
-            street: data?.street?.replaceAll("\n", ", "),
-            pin: data?.pin,
-            favorite: data?.favorite,
-          },
-        ],
-      });
-      let result = await newAddress.save();
-      return {
-        ...processhandler?.returnJSONsuccess,
-        returnData: result?.address,
-        msg: "Address added!",
-      };
+        let result = await newAddress.save();
+        return {
+          ...processhandler?.returnJSONsuccess,
+          returnData: result?.address,
+          msg: "Address added!",
+        };
+      }
     }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
+    };
   }
 };
 
 module.exports.EditAddress = async (data) => {
-  if (!this.voidCheck(data)) {
-    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
-  } else if (
-    !this.voidCheck(data?.userId) ||
-    !this.voidCheck(data?.addressId) ||
-    !this.voidCheck(data?.receiverName) ||
-    !this.voidCheck(data?.receiverContact) ||
-    !this.voidCheck(data?.house) ||
-    !this.voidCheck(data?.street) ||
-    !this.voidCheck(data?.pin) ||
-    !this.voidCheck(data?.favorite)
-  ) {
-    return {
-      ...processhandler?.returnJSONfailure,
-      msg: "Missing keys: {userId, addressId, receiverName, receiverContact, house, street, pin, favorite}",
-    };
-  } else {
-    let findAddress = await Address.findOne({ userId: data?.userId });
-    if (findAddress) {
-      const asyncEditFunc = () => {
-        return new Promise(async (resolve, reject) => {
-          if (data?.favorite) {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.userId) ||
+      !this.voidCheck(data?.addressId) ||
+      !this.voidCheck(data?.receiverName) ||
+      !this.voidCheck(data?.receiverContact) ||
+      !this.voidCheck(data?.house) ||
+      !this.voidCheck(data?.street) ||
+      !this.voidCheck(data?.pin) ||
+      !this.voidCheck(data?.favorite)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {userId, addressId, receiverName, receiverContact, house, street, pin, favorite}",
+      };
+    } else {
+      let findAddress = await Address.findOne({ userId: data?.userId });
+      if (findAddress) {
+        const asyncEditFunc = () => {
+          return new Promise(async (resolve, reject) => {
+            if (data?.favorite) {
+              await Address.updateOne(
+                {
+                  userId: data?.userId,
+                  address: { $elemMatch: { favorite: true } },
+                },
+                {
+                  $set: {
+                    "address.$.favorite": false,
+                  },
+                }
+              );
+            }
             await Address.updateOne(
-              { address: { $elemMatch: { favorite: true } } },
+              {
+                userId: data?.userId,
+                address: { $elemMatch: { _id: data?.addressId } },
+              },
               {
                 $set: {
-                  "address.$.favorite": false,
+                  "address.$.receiverName": data?.receiverName,
+                  "address.$.receiverContact": data?.receiverContact,
+                  "address.$.house": data?.house?.replaceAll("\n", ", "),
+                  "address.$.street": data?.street?.replaceAll("\n", ", "),
+                  "address.$.pin": data?.pin,
+                  "address.$.favorite": data?.favorite,
                 },
               }
             );
-          }
-          await Address.updateOne(
-            { address: { $elemMatch: { _id: data?.addressId } } },
-            {
-              $set: {
-                "address.$.receiverName": data?.receiverName,
-                "address.$.receiverContact": data?.receiverContact,
-                "address.$.house": data?.house?.replaceAll("\n", ", "),
-                "address.$.street": data?.street?.replaceAll("\n", ", "),
-                "address.$.pin": data?.pin,
-                "address.$.favorite": data?.favorite,
-              },
-            }
-          );
-          let result = await Address.findOne({ userId: data?.userId });
-          resolve(result?.address);
-        });
-      };
-      let response = await asyncEditFunc();
-      return {
-        ...processhandler?.returnJSONsuccess,
-        returnData: response,
-        msg: "Address updated!",
-      };
-    } else {
-      return {
-        ...processhandler?.returnJSONfailure,
-        msg: "Address not found!",
-      };
+            let result = await Address.findOne({ userId: data?.userId });
+            resolve(result?.address);
+          });
+        };
+        let response = await asyncEditFunc();
+        return {
+          ...processhandler?.returnJSONsuccess,
+          returnData: response,
+          msg: "Address updated!",
+        };
+      } else {
+        return {
+          ...processhandler?.returnJSONfailure,
+          msg: "Address not found!",
+        };
+      }
     }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
+    };
   }
 };
 
 module.exports.RemoveAddress = async (data) => {
-  if (!this.voidCheck(data)) {
-    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
-  } else if (
-    !this.voidCheck(data?.userId) ||
-    !this.voidCheck(data?.addressId)
-  ) {
-    return {
-      ...processhandler?.returnJSONfailure,
-      msg: "Missing keys: {userId, addressId}",
-    };
-  } else {
-    let findAddress = await Address.findOne({ userId: data?.userId });
-    if (findAddress?.address?.length === 1) {
-      await Address.deleteOne({ userId: data?.userId });
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.userId) ||
+      !this.voidCheck(data?.addressId)
+    ) {
       return {
-        ...processhandler?.returnJSONsuccess,
-        returnData: [],
-        msg: "Address removed!",
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {userId, addressId}",
       };
     } else {
-      await Address.updateOne(
-        { userId: data?.userId },
-        {
-          $pull: {
-            address: { _id: data?.addressId },
-          },
-        }
-      );
-      let address = await Address.findOne({ userId: data?.userId });
-      return {
-        ...processhandler?.returnJSONsuccess,
-        returnData: address?.address,
-        msg: "Address removed!",
-      };
+      let findAddress = await Address.findOne({ userId: data?.userId });
+      if (findAddress?.address?.length === 1) {
+        await Address.deleteOne({ userId: data?.userId });
+        return {
+          ...processhandler?.returnJSONsuccess,
+          returnData: [],
+          msg: "Address removed!",
+        };
+      } else {
+        await Address.updateOne(
+          { userId: data?.userId },
+          {
+            $pull: {
+              address: { _id: data?.addressId },
+            },
+          }
+        );
+        let address = await Address.findOne({ userId: data?.userId });
+        return {
+          ...processhandler?.returnJSONsuccess,
+          returnData: address?.address,
+          msg: "Address removed!",
+        };
+      }
     }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
+    };
   }
 };
 
