@@ -788,7 +788,10 @@ module.exports.TransactionTokenGenerate = async (data) => {
       const requestAsyncFunc = () => {
         return new Promise((resolve, reject) => {
           let options = {
-            hostname: process.env.PAYTM_HOST,
+            hostname:
+              process.env.ENV === "production"
+                ? process.env.PAYTM_HOST_PROD
+                : PAYTM_HOST_STAGE,
             port: 443,
             path: `/theia/api/v1/initiateTransaction?mid=${data?.mid}&orderId=${data?.oid}`,
             method: "POST",
@@ -871,7 +874,10 @@ module.exports.TransactionVerify = async (data) => {
       const requestAsyncFunc = () => {
         return new Promise((resolve, reject) => {
           let options = {
-            hostname: process.env.PAYTM_HOST,
+            hostname:
+              process.env.ENV === "production"
+                ? process.env.PAYTM_HOST_PROD
+                : PAYTM_HOST_STAGEPAYTM_HOST,
             port: 443,
             path: "/v3/order/status",
             method: "POST",
