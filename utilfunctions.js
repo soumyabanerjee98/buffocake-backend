@@ -10,6 +10,8 @@ const { unlink } = require("fs/promises");
 const Carts = require("./models/Carts");
 const Address = require("./models/Address");
 const Orders = require("./models/Orders");
+const Catagory = require("./models/Catagory");
+const Subcatagory = require("./models/Subcatagory");
 
 dotenv.config();
 
@@ -150,6 +152,7 @@ module.exports.LoginUserWithPhone = async (data) => {
           returnData: {
             profileData: {
               id: findUser?._id,
+              admin: findUser?.admin,
               firstName: findUser?.firstName,
               lastName: findUser?.lastName,
               email: findUser?.email,
@@ -199,6 +202,7 @@ module.exports.LoginUserWithEmail = async (data) => {
         returnData: {
           profileData: {
             id: findUser?._id,
+            admin: findUser?.admin,
             firstName: findUser?.firstName,
             lastName: findUser?.lastName,
             email: findUser?.email,
@@ -236,18 +240,26 @@ module.exports.VerifyToken = async (data) => {
                 msg: `Error: ${err}`,
               });
             } else {
-              resolve({
-                ...processhandler?.returnJSONsuccess,
-                returnData: {
-                  id: user?._id,
-                  firstName: user?.firstName,
-                  lastName: user?.lastName,
-                  email: user?.email,
-                  phoneNumber: user?.phoneNumber,
-                  profilePhoto: user?.profilePhoto,
-                },
-                msg: "Verified successfully!",
-              });
+              if (user) {
+                resolve({
+                  ...processhandler?.returnJSONsuccess,
+                  returnData: {
+                    id: user?._id,
+                    admin: user?.admin,
+                    firstName: user?.firstName,
+                    lastName: user?.lastName,
+                    email: user?.email,
+                    phoneNumber: user?.phoneNumber,
+                    profilePhoto: user?.profilePhoto,
+                  },
+                  msg: "Verified successfully!",
+                });
+              } else {
+                resolve({
+                  ...processhandler?.returnJSONfailure,
+                  msg: `User not found!`,
+                });
+              }
             }
           });
         });
@@ -351,9 +363,25 @@ module.exports.CreateAccount = async (data) => {
         profilePhoto: null,
       });
       let result = await newUser.save();
+      const accessToken = jwt.sign(
+        { userId: result?._id },
+        process.env.JWT_SECRET_TOKEN,
+        { expiresIn: process.env.JWT_TOKEN_EXP }
+      );
       return {
         ...processhandler?.returnJSONsuccess,
-        returnData: result,
+        returnData: {
+          profileData: {
+            id: result?._id,
+            admin: result?.admin,
+            firstName: result?.firstName,
+            lastName: result?.lastName,
+            email: result?.email,
+            phoneNumber: result?.phoneNumber,
+            profilePhoto: result?.profilePhoto,
+          },
+          accessToken: accessToken,
+        },
         msg: "Account created successfully!",
       };
     }
@@ -923,12 +951,13 @@ module.exports.SaveNewProduct = async (data) => {
       !this.voidCheck(data?.metaDesc) ||
       !this.voidCheck(data?.title) ||
       !this.voidCheck(data?.description) ||
-      !this.voidCheck(data?.catagory) ||
+      !this.voidCheck(data?.catagoryArr) ||
+      !this.voidCheck(data?.subCatagoryArr) ||
       !this.voidCheck(data?.unitValue)
     ) {
       return {
         ...processhandler?.returnJSONfailure,
-        msg: "Missing keys: {metaHead, metaDesc, title, description, catagory, unitValue}",
+        msg: "Missing keys: {metaHead, metaDesc, title, description, catagoryArr, subCatagoryArr, unitValue}",
       };
     } else {
       const newProduct = new Products({
@@ -936,7 +965,12 @@ module.exports.SaveNewProduct = async (data) => {
         metaDesc: data?.metaDesc,
         title: data?.title,
         description: data?.description,
-        catagory: data?.catagory,
+        catagory: data?.catagoryArr?.map((i) => {
+          return { catagoryId: i?.value, catagoryName: i?.label };
+        }),
+        subCatagory: data?.subCatagoryArr?.map((i) => {
+          return { subCatagoryId: i?.value, subCatagoryName: i?.label };
+        }),
         unitValue: data?.unitValue,
         minWeight: data?.minWeight,
         productImage: data?.productImage,
@@ -1440,5 +1474,219 @@ module.exports.GetOrders = async (data) => {
         msg: "No orders found!",
       };
     }
+  }
+};
+
+module.exports.CreateCatagory = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (!this.voidCheck(data?.label)) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {label}",
+      };
+    } else {
+      const newCatagory = new Catagory({
+        catagory: data?.label,
+      });
+      await newCatagory.save();
+      let result = await Catagory.find();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Catagory created`,
+      };
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error?.message}`,
+    };
+  }
+};
+
+module.exports.GetCatagory = async () => {
+  try {
+    let result = await Catagory.find();
+    if (result) {
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Catagories fetched!`,
+      };
+    } else {
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: [],
+        msg: `No catagories in DB`,
+      };
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error?.message}`,
+    };
+  }
+};
+
+module.exports.UpdateCatagory = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (!this.voidCheck(data?.label) || !this.voidCheck(data?.value)) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {label, value}",
+      };
+    } else {
+      const findCatagory = await Catagory.findById(data?.value);
+      await findCatagory.updateOne({ $set: { catagory: data?.label } });
+      const result = await Catagory.find();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Catagory updated!`,
+      };
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error?.message}`,
+    };
+  }
+};
+
+module.exports.DeleteCatagory = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (!this.voidCheck(data?.value)) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {value}",
+      };
+    } else {
+      const findCatagory = await Catagory.findById(data?.value);
+      await findCatagory.deleteOne();
+      const result = await Catagory.find();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Catagory deleted!`,
+      };
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error?.message}`,
+    };
+  }
+};
+
+module.exports.CreateSubCatagory = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (!this.voidCheck(data?.label)) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {label}",
+      };
+    } else {
+      const newSubCatagory = new Subcatagory({
+        subCatagory: data?.label,
+      });
+      await newSubCatagory.save();
+      let result = await Subcatagory.find();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Sub Catagory created`,
+      };
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error?.message}`,
+    };
+  }
+};
+
+module.exports.GetSubCatagory = async () => {
+  try {
+    let result = await Subcatagory.find();
+    if (result) {
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Sub catagories fetched!`,
+      };
+    } else {
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: [],
+        msg: `No sub catagories in DB`,
+      };
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error?.message}`,
+    };
+  }
+};
+
+module.exports.UpdateSubCatagory = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (!this.voidCheck(data?.label) || !this.voidCheck(data?.value)) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {label, value}",
+      };
+    } else {
+      const findSubCatagory = await Subcatagory.findById(data?.value);
+      await findSubCatagory.updateOne({ $set: { subCatagory: data?.label } });
+      const result = await Subcatagory.find();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Sub Catagory updated!`,
+      };
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error?.message}`,
+    };
+  }
+};
+
+module.exports.DeleteSubCatagory = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (!this.voidCheck(data?.value)) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {value}",
+      };
+    } else {
+      const findSubCatagory = await Subcatagory.findById(data?.value);
+      await findSubCatagory.deleteOne();
+      const result = await Subcatagory.find();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Sub catagory deleted!`,
+      };
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error?.message}`,
+    };
   }
 };

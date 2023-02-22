@@ -17,10 +17,30 @@ const ProductSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  catagory: {
-    type: String,
-    required: true,
-  },
+  catagory: [
+    {
+      catagoryId: {
+        type: String,
+        required: true,
+      },
+      catagoryName: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
+  subCatagory: [
+    {
+      subCatagoryId: {
+        type: String,
+        required: true,
+      },
+      subCatagoryName: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
   unitValue: {
     type: Number,
     required: true,

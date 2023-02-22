@@ -95,6 +95,30 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
     case "get-orders":
       return utilfunctions?.GetOrders(data_json);
       break;
+    case "create-catagory":
+      return utilfunctions?.CreateCatagory(data_json);
+      break;
+    case "get-catagory":
+      return utilfunctions?.GetCatagory();
+      break;
+    case "update-catagory":
+      return utilfunctions?.UpdateCatagory(data_json);
+      break;
+    case "delete-catagory":
+      return utilfunctions?.DeleteCatagory(data_json);
+      break;
+    case "create-subcatagory":
+      return utilfunctions?.CreateSubCatagory(data_json);
+      break;
+    case "get-subcatagory":
+      return utilfunctions?.GetSubCatagory();
+      break;
+    case "update-subcatagory":
+      return utilfunctions?.UpdateSubCatagory(data_json);
+      break;
+    case "delete-subcatagory":
+      return utilfunctions?.DeleteSubCatagory(data_json);
+      break;
     default:
       return { ...this.returnJSONfailure, msg: "No Process Id found" };
       break;
