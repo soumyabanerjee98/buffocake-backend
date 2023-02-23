@@ -981,11 +981,87 @@ module.exports.SaveNewProduct = async (data) => {
           return { option: i?.option, value: i?.value };
         }),
       });
-      let result = await newProduct.save();
+      await newProduct.save();
+      let result = await Products.find();
       return {
         ...processhandler?.returnJSONsuccess,
         returnData: result,
         msg: "New product saved!",
+      };
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
+    };
+  }
+};
+
+module.exports.UpdateProduct = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.productId) ||
+      !this.voidCheck(data?.metaHead) ||
+      !this.voidCheck(data?.metaDesc) ||
+      !this.voidCheck(data?.title) ||
+      !this.voidCheck(data?.description) ||
+      !this.voidCheck(data?.unitValue) ||
+      !this.voidCheck(data?.minWeight)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId, metaHead, metaDesc, title, description, unitValue, minWeight}",
+      };
+    } else {
+      await Products.updateOne(
+        { _id: data?.productId },
+        {
+          $set: {
+            metaHead: data?.metaHead,
+            metaDesc: data?.metaDesc,
+            title: data?.title,
+            description: data?.description,
+            unitValue: data?.unitValue,
+            minWeight: data?.minWeight,
+            productImage: data?.productImage,
+          },
+        }
+      );
+
+      let result = await Products.find();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: "Product updated!",
+      };
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
+    };
+  }
+};
+
+module.exports.DeleteProduct = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (!this.voidCheck(data?.productId)) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId}",
+      };
+    } else {
+      await Products.deleteOne({ _id: data?.productId });
+
+      let result = await Products.find();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: "Product deleted!",
       };
     }
   } catch (error) {
@@ -1688,5 +1764,360 @@ module.exports.DeleteSubCatagory = async (data) => {
       ...processhandler?.returnJSONfailure,
       msg: `Error: ${error?.message}`,
     };
+  }
+};
+
+module.exports.AddProductCatagory = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.productId) ||
+      !this.voidCheck(data?.label) ||
+      !this.voidCheck(data?.value)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId, label, value}",
+      };
+    } else {
+      await Products.updateOne(
+        {
+          _id: data?.productId,
+        },
+        {
+          $push: {
+            catagory: { catagoryId: data?.value, catagoryName: data?.label },
+          },
+        }
+      );
+      let result = await Products.findOne({ _id: data?.productId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Product catagory added!`,
+      };
+    }
+  } catch (error) {
+    return { ...processhandler?.returnJSONfailure, msg: `Error: ${error}` };
+  }
+};
+
+module.exports.EditProductCatagory = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.productId) ||
+      !this.voidCheck(data?.catagoryId) ||
+      !this.voidCheck(data?.label) ||
+      !this.voidCheck(data?.value)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId, catagoryId, label, value}",
+      };
+    } else {
+      await Products.updateOne(
+        {
+          _id: data?.productId,
+          catagory: { $elemMatch: { _id: data?.catagoryId } },
+        },
+        {
+          $set: {
+            "catagory.$.catagoryId": data?.value,
+            "catagory.$.catagoryName": data?.label,
+          },
+        }
+      );
+      let result = await Products.findOne({ _id: data?.productId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Product catagory updated!`,
+      };
+    }
+  } catch (error) {
+    return { ...processhandler?.returnJSONfailure, msg: `Error: ${error}` };
+  }
+};
+
+module.exports.DeleteProductCatagory = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.productId) ||
+      !this.voidCheck(data?.catagoryId)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId, catagoryId}",
+      };
+    } else {
+      await Products.updateOne(
+        {
+          _id: data?.productId,
+        },
+        { $pull: { catagory: { _id: data?.catagoryId } } }
+      );
+      let result = await Products.findOne({ _id: data?.productId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Product catagory deleted!`,
+      };
+    }
+  } catch (error) {
+    return { ...processhandler?.returnJSONfailure, msg: `Error: ${error}` };
+  }
+};
+
+module.exports.AddProductSubCatagory = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.productId) ||
+      !this.voidCheck(data?.label) ||
+      !this.voidCheck(data?.value)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId, label, value}",
+      };
+    } else {
+      await Products.updateOne(
+        {
+          _id: data?.productId,
+        },
+        {
+          $push: {
+            subCatagory: {
+              subCatagoryId: data?.value,
+              subCatagoryName: data?.label,
+            },
+          },
+        }
+      );
+      let result = await Products.findOne({ _id: data?.productId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Product sub catagory added!`,
+      };
+    }
+  } catch (error) {
+    return { ...processhandler?.returnJSONfailure, msg: `Error: ${error}` };
+  }
+};
+
+module.exports.EditProductSubCatagory = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.productId) ||
+      !this.voidCheck(data?.subCatagoryId) ||
+      !this.voidCheck(data?.label) ||
+      !this.voidCheck(data?.value)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId, subCatagoryId, label, value}",
+      };
+    } else {
+      await Products.updateOne(
+        {
+          _id: data?.productId,
+          subCatagory: { $elemMatch: { _id: data?.subCatagoryId } },
+        },
+        {
+          $set: {
+            "catagory.$.subCatagoryId": data?.value,
+            "catagory.$.subCatagoryName": data?.label,
+          },
+        }
+      );
+      let result = await Products.findOne({ _id: data?.productId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Product sub catagory updated!`,
+      };
+    }
+  } catch (error) {
+    return { ...processhandler?.returnJSONfailure, msg: `Error: ${error}` };
+  }
+};
+
+module.exports.DeleteProductSubCatagory = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.productId) ||
+      !this.voidCheck(data?.subCatagoryId)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId, subCatagoryId}",
+      };
+    } else {
+      await Products.updateOne(
+        {
+          _id: data?.productId,
+        },
+        { $pull: { subCatagory: { _id: data?.subCatagoryId } } }
+      );
+      let result = await Products.findOne({ _id: data?.productId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Product sub catagory deleted!`,
+      };
+    }
+  } catch (error) {
+    return { ...processhandler?.returnJSONfailure, msg: `Error: ${error}` };
+  }
+};
+
+module.exports.AddFlavour = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.productId) ||
+      !this.voidCheck(data?.flavour) ||
+      !this.voidCheck(data?.value)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId, flavour, value}",
+      };
+    } else {
+      await Products.updateOne(
+        {
+          _id: data?.productId,
+        },
+        {
+          $push: {
+            availableFlavours: {
+              flavour: data?.flavour,
+              value: data?.value,
+            },
+          },
+        }
+      );
+      let result = await Products.findOne({ _id: data?.productId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Product flavour added!`,
+      };
+    }
+  } catch (error) {
+    return { ...processhandler?.returnJSONfailure, msg: `Error: ${error}` };
+  }
+};
+
+module.exports.DeleteFlavour = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.productId) ||
+      !this.voidCheck(data?.flavourId)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId, flavourId}",
+      };
+    } else {
+      await Products.updateOne(
+        {
+          _id: data?.productId,
+        },
+        { $pull: { availableFlavours: { _id: data?.flavourId } } }
+      );
+      let result = await Products.findOne({ _id: data?.productId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Product flavour deleted!`,
+      };
+    }
+  } catch (error) {
+    return { ...processhandler?.returnJSONfailure, msg: `Error: ${error}` };
+  }
+};
+
+module.exports.AddCustom = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.productId) ||
+      !this.voidCheck(data?.option) ||
+      !this.voidCheck(data?.value)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId, option, value}",
+      };
+    } else {
+      await Products.updateOne(
+        {
+          _id: data?.productId,
+        },
+        {
+          $push: {
+            customOptions: {
+              option: data?.option,
+              value: data?.value,
+            },
+          },
+        }
+      );
+      let result = await Products.findOne({ _id: data?.productId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Product customization added!`,
+      };
+    }
+  } catch (error) {
+    return { ...processhandler?.returnJSONfailure, msg: `Error: ${error}` };
+  }
+};
+
+module.exports.DeleteCustom = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.productId) ||
+      !this.voidCheck(data?.customId)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId, customId}",
+      };
+    } else {
+      await Products.updateOne(
+        {
+          _id: data?.productId,
+        },
+        { $pull: { customOptions: { _id: data?.flavourId } } }
+      );
+      let result = await Products.findOne({ _id: data?.customId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Product flavour deleted!`,
+      };
+    }
+  } catch (error) {
+    return { ...processhandler?.returnJSONfailure, msg: `Error: ${error}` };
   }
 };

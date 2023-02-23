@@ -62,6 +62,12 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
     case "save-new-product":
       return utilfunctions?.SaveNewProduct(data_json);
       break;
+    case "update-product":
+      return utilfunctions?.UpdateProduct(data_json);
+      break;
+    case "delete-product":
+      return utilfunctions?.DeleteProduct(data_json);
+      break;
     case "get-product-details":
       return utilfunctions?.GetProductDetails(data_json);
       break;
@@ -118,6 +124,36 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
       break;
     case "delete-subcatagory":
       return utilfunctions?.DeleteSubCatagory(data_json);
+      break;
+    case "add-product-catagory":
+      return utilfunctions?.AddProductCatagory(data_json);
+      break;
+    case "edit-product-catagory":
+      return utilfunctions?.EditProductCatagory(data_json);
+      break;
+    case "delete-product-catagory":
+      return utilfunctions?.DeleteProductCatagory(data_json);
+      break;
+    case "add-product-subcatagory":
+      return utilfunctions?.AddProductSubCatagory(data_json);
+      break;
+    case "edit-product-subcatagory":
+      return utilfunctions?.EditProductSubCatagory(data_json);
+      break;
+    case "delete-product-subcatagory":
+      return utilfunctions?.DeleteProductSubCatagory(data_json);
+      break;
+    case "add-product-flavour":
+      return utilfunctions?.AddFlavour(data_json);
+      break;
+    case "delete-product-flavour":
+      return utilfunctions?.DeleteFlavour(data_json);
+      break;
+    case "add-product-custom":
+      return utilfunctions?.AddCustom(data_json);
+      break;
+    case "delete-product-custom":
+      return utilfunctions?.DeleteCustom(data_json);
       break;
     default:
       return { ...this.returnJSONfailure, msg: "No Process Id found" };
