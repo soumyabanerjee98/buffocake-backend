@@ -95,8 +95,11 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
     case "create-order":
       return utilfunctions?.CreateOrder(data_json);
       break;
-    case "update-order":
-      return utilfunctions?.UpdateOrder(data_json);
+    case "update-order-status":
+      return utilfunctions?.UpdateOrderStatus(data_json);
+      break;
+    case "update-order-substatus":
+      return utilfunctions?.UpdateOrderSubStatus(data_json);
       break;
     case "get-all-orders":
       return utilfunctions?.GetAllOrders();

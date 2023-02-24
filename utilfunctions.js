@@ -1526,7 +1526,58 @@ module.exports.CreateOrder = async (data) => {
   }
 };
 
-module.exports.UpdateOrder = async (data) => {};
+module.exports.UpdateOrderStatus = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (!this.voidCheck(data?.orderId) || !this.voidCheck(data?.status)) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {orderId, status}",
+    };
+  } else {
+    await Orders.updateOne(
+      {
+        orderId: data?.orderId,
+      },
+      { $set: { orderStatus: data?.status } }
+    );
+    let result = await Orders.findOne({ orderId: data?.orderId });
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnData: result,
+      msg: "Orders updated successfully!",
+    };
+  }
+};
+
+module.exports.UpdateOrderSubStatus = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (
+    !this.voidCheck(data?.orderId) ||
+    !this.voidCheck(data?.subOrderId) ||
+    !this.voidCheck(data?.status)
+  ) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {orderId, subOrderId, status}",
+    };
+  } else {
+    await Orders.updateOne(
+      {
+        orderId: data?.orderId,
+        items: { $elemMatch: { subOrderId: data?.subOrderId } },
+      },
+      { $set: { "items.$.subOrderStatus": data?.status } }
+    );
+    let result = await Orders.findOne({ orderId: data?.orderId });
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnData: result,
+      msg: "Orders updated successfully!",
+    };
+  }
+};
 
 module.exports.GetOrders = async (data) => {
   if (!this.voidCheck(data)) {
