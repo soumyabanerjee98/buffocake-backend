@@ -170,6 +170,18 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
     case "remove-catagory-map":
       return utilfunctions?.RemoveCatagoryMap(data_json);
       break;
+    case "get-carousel":
+      return utilfunctions?.GetCarousel();
+      break;
+    case "add-carousel":
+      return utilfunctions?.AddCarousel(data_json);
+      break;
+    case "edit-carousel":
+      return utilfunctions?.EditCarousel(data_json);
+      break;
+    case "delete-carousel":
+      return utilfunctions?.DeleteCarousel(data_json);
+      break;
     default:
       return { ...this.returnJSONfailure, msg: "No Process Id found" };
       break;

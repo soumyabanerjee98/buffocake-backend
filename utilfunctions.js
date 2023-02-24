@@ -12,6 +12,7 @@ const Address = require("./models/Address");
 const Orders = require("./models/Orders");
 const Catagory = require("./models/Catagory");
 const Subcatagory = require("./models/Subcatagory");
+const Carousel = require("./models/Carousel");
 
 dotenv.config();
 
@@ -2311,5 +2312,107 @@ module.exports.RemoveCatagoryMap = async (data) => {
     }
   } catch (error) {
     return { ...processhandler?.returnJSONfailure, msg: `Error: ${error}` };
+  }
+};
+
+module.exports.AddCarousel = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (!this.voidCheck(data?.mediaPath)) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {mediaPath}",
+    };
+  } else {
+    const carousel = new Carousel({
+      mediaPath: data?.mediaPath,
+    });
+    let result = await carousel.save();
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnData: result,
+      msg: "Carousel added",
+    };
+  }
+};
+
+module.exports.EditCarousel = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (
+    !this.voidCheck(data?.carouselId) ||
+    !this.voidCheck(data?.mediaPath)
+  ) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {carouselId, mediaPath}",
+    };
+  } else {
+    const carousel = await Carousel.findOne({ _id: data?.carouselId });
+    if (carousel) {
+      await Carousel.updateOne(
+        { _id: data?.carouselId },
+        {
+          $set: {
+            mediaPath: data?.mediaPath,
+          },
+        }
+      );
+      let result = await Carousel.find();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: "Carousel edited",
+      };
+    } else {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Carousel not found!",
+      };
+    }
+  }
+};
+
+module.exports.DeleteCarousel = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (!this.voidCheck(data?.carouselId)) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {carouselId}",
+    };
+  } else {
+    const carousel = await Carousel.findOne({ _id: data?.carouselId });
+    if (carousel) {
+      await Carousel.deleteOne({ _id: data?.carouselId });
+      let result = await Carousel.find();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: "Carousel deleted",
+      };
+    } else {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Carousel not found!",
+      };
+    }
+  }
+};
+
+module.exports.GetCarousel = async () => {
+  let result = await Carousel.find();
+  if (result) {
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnData: result,
+      msg: "Carousel fetched",
+    };
+  } else {
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnData: [],
+      msg: "No carousel in DB",
+    };
   }
 };
