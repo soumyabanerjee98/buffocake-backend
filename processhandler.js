@@ -155,6 +155,15 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
     case "delete-product-custom":
       return utilfunctions?.DeleteCustom(data_json);
       break;
+    case "get-catagory-map":
+      return utilfunctions?.GetCatagoryMap(data_json);
+      break;
+    case "add-catagory-map":
+      return utilfunctions?.AddCatagoryMap(data_json);
+      break;
+    case "remove-catagory-map":
+      return utilfunctions?.RemoveCatagoryMap(data_json);
+      break;
     default:
       return { ...this.returnJSONfailure, msg: "No Process Id found" };
       break;

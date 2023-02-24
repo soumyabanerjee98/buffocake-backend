@@ -1617,6 +1617,16 @@ module.exports.UpdateCatagory = async (data) => {
       };
     } else {
       const findCatagory = await Catagory.findById(data?.value);
+      await Products.updateMany(
+        {
+          catagory: { $elemMatch: { catagoryId: data?.value } },
+        },
+        {
+          $set: {
+            "catagory.$.catagoryName": data?.label,
+          },
+        }
+      );
       await findCatagory.updateOne({ $set: { catagory: data?.label } });
       const result = await Catagory.find();
       return {
@@ -1724,6 +1734,26 @@ module.exports.UpdateSubCatagory = async (data) => {
       };
     } else {
       const findSubCatagory = await Subcatagory.findById(data?.value);
+      await Products.updateMany(
+        {
+          subCatagory: { $elemMatch: { subCatagoryId: data?.value } },
+        },
+        {
+          $set: {
+            "subCatagory.$.subCatagoryName": data?.label,
+          },
+        }
+      );
+      await Catagory.updateMany(
+        {
+          subCatagory: { $elemMatch: { subCatagoryId: data?.value } },
+        },
+        {
+          $set: {
+            "subCatagory.$.subCatagoryName": data?.label,
+          },
+        }
+      );
       await findSubCatagory.updateOne({ $set: { subCatagory: data?.label } });
       const result = await Subcatagory.find();
       return {
@@ -2115,6 +2145,100 @@ module.exports.DeleteCustom = async (data) => {
         ...processhandler?.returnJSONsuccess,
         returnData: result,
         msg: `Product flavour deleted!`,
+      };
+    }
+  } catch (error) {
+    return { ...processhandler?.returnJSONfailure, msg: `Error: ${error}` };
+  }
+};
+
+module.exports.GetCatagoryMap = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (!this.voidCheck(data?.catagoryId)) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {catagoryId}",
+      };
+    } else {
+      let result = await Catagory.findOne({ _id: data?.catagoryId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result?.subCatagory,
+        msg: "Sub catagory map fetched",
+      };
+    }
+  } catch (error) {
+    return { ...processhandler?.returnJSONfailure, msg: `Error: ${error}` };
+  }
+};
+
+module.exports.AddCatagoryMap = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.catagoryId) ||
+      !this.voidCheck(data?.subCatagoryId)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {catagoryId. subCatagoryId}",
+      };
+    } else {
+      let subCatagory = await Subcatagory.findOne({ _id: data?.subCatagoryId });
+      await Catagory.updateOne(
+        { _id: data?.catagoryId },
+        {
+          $push: {
+            subCatagory: {
+              subCatagoryId: subCatagory?._id,
+              subCatagoryName: subCatagory?.subCatagory,
+            },
+          },
+        }
+      );
+      let result = await Catagory.findOne({ _id: data?.catagoryId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result?.subCatagory,
+        msg: "Sub catagory map added",
+      };
+    }
+  } catch (error) {
+    return { ...processhandler?.returnJSONfailure, msg: `Error: ${error}` };
+  }
+};
+
+module.exports.RemoveCatagoryMap = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.catagoryId) ||
+      !this.voidCheck(data?.subCatagoryMapId)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {catagoryId. subCatagoryMapId}",
+      };
+    } else {
+      await Catagory.updateOne(
+        { _id: data?.catagoryId },
+        {
+          $pull: {
+            subCatagory: {
+              _id: data?.subCatagoryMapId,
+            },
+          },
+        }
+      );
+      let result = await Catagory.findOne({ _id: data?.catagoryId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result?.subCatagory,
+        msg: "Sub catagory map removed",
       };
     }
   } catch (error) {

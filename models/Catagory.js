@@ -5,6 +5,18 @@ const CatagorySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  subCatagory: [
+    {
+      subCatagoryId: {
+        type: String,
+        required: true,
+      },
+      subCatagoryName: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
 });
 
 module.exports = mongoose.model("Catagories", CatagorySchema);
