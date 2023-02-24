@@ -1553,6 +1553,23 @@ module.exports.GetOrders = async (data) => {
   }
 };
 
+module.exports.GetAllOrders = async () => {
+  let orders = await Orders.find();
+  if (orders) {
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnData: orders,
+      msg: "Orders fetched successfully!",
+    };
+  } else {
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnD: [],
+      msg: "No orders found!",
+    };
+  }
+};
+
 module.exports.CreateCatagory = async (data) => {
   try {
     if (!this.voidCheck(data)) {
