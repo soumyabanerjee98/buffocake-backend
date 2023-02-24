@@ -68,6 +68,15 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
     case "delete-product":
       return utilfunctions?.DeleteProduct(data_json);
       break;
+    case "add-product-image":
+      return utilfunctions?.AddProductImage(data_json);
+      break;
+    case "edit-product-image":
+      return utilfunctions?.UpdateProductImage(data_json);
+      break;
+    case "delete-product-image":
+      return utilfunctions?.DeleteProductImage(data_json);
+      break;
     case "get-product-details":
       return utilfunctions?.GetProductDetails(data_json);
       break;

@@ -45,10 +45,14 @@ const ProductSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  productImage: {
-    type: String,
-    default: null,
-  },
+  productImage: [
+    {
+      mediaPath: {
+        type: String,
+        default: null,
+      },
+    },
+  ],
   minWeight: {
     type: Number,
     default: 1,

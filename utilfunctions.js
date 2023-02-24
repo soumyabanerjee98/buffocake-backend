@@ -974,7 +974,9 @@ module.exports.SaveNewProduct = async (data) => {
         }),
         unitValue: data?.unitValue,
         minWeight: data?.minWeight,
-        productImage: data?.productImage,
+        productImage: data?.productImage?.map((i) => {
+          return { mediaPath: i?.mediaPath };
+        }),
         availableFlavours: data?.availableFlavours?.map((i) => {
           return { flavour: i?.flavour, value: i?.value };
         }),
@@ -1026,7 +1028,6 @@ module.exports.UpdateProduct = async (data) => {
             description: data?.description,
             unitValue: data?.unitValue,
             minWeight: data?.minWeight,
-            productImage: data?.productImage,
           },
         }
       );
@@ -1116,6 +1117,108 @@ module.exports.GetProductDetails = async (data) => {
         });
       });
       return returnResponse;
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
+    };
+  }
+};
+
+module.exports.AddProductImage = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.productId) ||
+      !this.voidCheck(data?.mediaPath)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId, mediaPath}",
+      };
+    } else {
+      await Products.updateOne(
+        { _id: data?.productId },
+        { $push: { productImage: { mediaPath: data?.mediaPath } } }
+      );
+      let result = await Products.find();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: "Image added to product",
+      };
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
+    };
+  }
+};
+
+module.exports.UpdateProductImage = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.productId) ||
+      !this.voidCheck(data?.imageId) ||
+      !this.voidCheck(data?.mediaPath)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId, imageId, mediaPath}",
+      };
+    } else {
+      await Products.updateOne(
+        {
+          _id: data?.productId,
+          productImage: { $elemMatch: { _id: data?.imageId } },
+        },
+        { $set: { "productImage.$.mediaPath": data?.mediaPath } }
+      );
+      let result = await Products.find();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: "Image updated to product",
+      };
+    }
+  } catch (error) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: `Error: ${error}`,
+    };
+  }
+};
+
+module.exports.DeleteProductImage = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.productId) ||
+      !this.voidCheck(data?.imageId)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId, imageId}",
+      };
+    } else {
+      await Products.updateOne(
+        {
+          _id: data?.productId,
+        },
+        { $pull: { productImage: { _id: data?.imageId } } }
+      );
+      let result = await Products.find();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: "Image deleted from product",
+      };
     }
   } catch (error) {
     return {
