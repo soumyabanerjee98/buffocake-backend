@@ -16,7 +16,7 @@ const WishlistSchema = new mongoose.Schema({
         required: true,
       },
       productImage: {
-        type: String,
+        type: Array,
       },
     },
   ],
