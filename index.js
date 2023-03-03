@@ -11,7 +11,11 @@ app.set("trust proxy", true);
 app.use(express.json());
 app.use(
   cors({
-    origin: "*",
+    origin: [
+      "https://boffocakes.com",
+      "http://localhost:3000",
+      "https://boffocakes.netlify.app/",
+    ],
   })
 );
 
