@@ -12,9 +12,9 @@ app.use(express.json());
 app.use(
   cors({
     origin: [
-      "https://boffocakes.com",
+      "https://boffocakes.com/",
       "http://localhost:3000",
-      "https://boffocakes.netlify.app/",
+      "https://boffocakes.netlify.app",
     ],
   })
 );
