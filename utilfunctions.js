@@ -760,12 +760,25 @@ module.exports.DeletePhoto = async (data) => {
         msg: "Missing keys: {mediaPath}",
       };
     }
-    let result = await unlink(__dirname + "/media/photos/" + data?.mediaPath);
-    return {
-      ...processhandler?.returnJSONsuccess,
-      returnData: result,
-      msg: `Successfully deleted ${data?.mediaPath}`,
-    };
+    if (Array.isArray(data?.mediaPath)) {
+      let resultArr = [];
+      data?.mediaPath?.map(async (i) => {
+        let result = await unlink(__dirname + "/media/photos/" + i?.mediaPath);
+        resultArr.push(result);
+      });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: resultArr,
+        msg: `Successfully deleted ${data?.mediaPath}`,
+      };
+    } else {
+      let result = await unlink(__dirname + "/media/photos/" + data?.mediaPath);
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Successfully deleted ${data?.mediaPath}`,
+      };
+    }
   } catch (error) {
     return {
       ...processhandler?.returnJSONfailure,
