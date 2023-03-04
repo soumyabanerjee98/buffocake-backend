@@ -769,7 +769,9 @@ module.exports.DeletePhoto = async (data) => {
       return {
         ...processhandler?.returnJSONsuccess,
         returnData: resultArr,
-        msg: `Successfully deleted ${data?.mediaPath}`,
+        msg: `Successfully deleted ${data?.mediaPath?.map((i) => {
+          return `${i?.mediaPath}, `;
+        })}`,
       };
     } else {
       let result = await unlink(__dirname + "/media/photos/" + data?.mediaPath);
