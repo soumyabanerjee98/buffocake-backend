@@ -969,11 +969,11 @@ module.exports.SaveNewProduct = async (data) => {
       !this.voidCheck(data?.description) ||
       !this.voidCheck(data?.catagoryArr) ||
       !this.voidCheck(data?.subCatagoryArr) ||
-      !this.voidCheck(data?.unitValue)
+      !this.voidCheck(data?.weight)
     ) {
       return {
         ...processhandler?.returnJSONfailure,
-        msg: "Missing keys: {metaHead, metaDesc, title, description, catagoryArr, subCatagoryArr, unitValue}",
+        msg: "Missing keys: {metaHead, metaDesc, title, description, catagoryArr, subCatagoryArr, weight}",
       };
     } else {
       const newProduct = new Products({
@@ -987,15 +987,16 @@ module.exports.SaveNewProduct = async (data) => {
         subCatagory: data?.subCatagoryArr?.map((i) => {
           return { subCatagoryId: i?.value, subCatagoryName: i?.label };
         }),
-        unitValue: data?.unitValue,
-        minWeight: data?.minWeight,
+        weight: data?.weight?.map((i) => {
+          return { label: i?.label, value: i?.value };
+        }),
         productImage: data?.productImage?.map((i) => {
           return { mediaPath: i?.mediaPath };
         }),
         availableFlavours: data?.availableFlavours?.map((i) => {
           return { flavour: i?.flavour, value: i?.value };
         }),
-        customOptions: data?.customOptions?.map((i) => {
+        gourmetOptions: data?.gourmetOptions?.map((i) => {
           return { option: i?.option, value: i?.value };
         }),
       });
@@ -1025,12 +1026,11 @@ module.exports.UpdateProduct = async (data) => {
       !this.voidCheck(data?.metaDesc) ||
       !this.voidCheck(data?.title) ||
       !this.voidCheck(data?.description) ||
-      !this.voidCheck(data?.unitValue) ||
       !this.voidCheck(data?.minWeight)
     ) {
       return {
         ...processhandler?.returnJSONfailure,
-        msg: "Missing keys: {productId, metaHead, metaDesc, title, description, unitValue, minWeight}",
+        msg: "Missing keys: {productId, metaHead, metaDesc, title, description, minWeight}",
       };
     } else {
       await Products.updateOne(
@@ -1041,7 +1041,6 @@ module.exports.UpdateProduct = async (data) => {
             metaDesc: data?.metaDesc,
             title: data?.title,
             description: data?.description,
-            unitValue: data?.unitValue,
             minWeight: data?.minWeight,
           },
         }
@@ -1402,9 +1401,9 @@ module.exports.AddToCart = async (data) => {
     } else if (
       !this.voidCheck(data?.userId) ||
       !this.voidCheck(data?.productId) ||
-      !this.voidCheck(data?.qty) ||
       !this.voidCheck(data?.weight) ||
       !this.voidCheck(data?.flavour) ||
+      !this.voidCheck(data?.gourmet) ||
       !this.voidCheck(data?.custom) ||
       !this.voidCheck(data?.message) ||
       !this.voidCheck(data?.allergy) ||
@@ -1414,7 +1413,7 @@ module.exports.AddToCart = async (data) => {
     ) {
       return {
         ...processhandler?.returnJSONfailure,
-        msg: "Missing keys: {userId, productId, qty, weight, flavour, custom, message, allergy, delDate, delTime, subTotal}",
+        msg: "Missing keys: {userId, productId, weight, flavour, gourmet, custom, message, allergy, delDate, delTime, subTotal}",
       };
     } else {
       let product = await Products.findById(data?.productId);
@@ -1428,10 +1427,10 @@ module.exports.AddToCart = async (data) => {
                 productId: data?.productId,
                 productName: product?.title,
                 productImage: product?.productImage,
-                qty: data?.qty,
                 weight: data?.weight,
                 flavour: data?.flavour,
                 custom: data?.custom,
+                gourmet: data?.gourmet,
                 message: data?.message,
                 allergy: data?.allergy,
                 delDate: data?.delDate,
@@ -1459,6 +1458,7 @@ module.exports.AddToCart = async (data) => {
               weight: data?.weight,
               flavour: data?.flavour,
               custom: data?.custom,
+              gourmet: data?.gourmet,
               message: data?.message,
               allergy: data?.allergy,
               delDate: data?.delDate,
@@ -2289,7 +2289,7 @@ module.exports.AddCustom = async (data) => {
         },
         {
           $push: {
-            customOptions: {
+            gourmetOptions: {
               option: data?.option,
               value: data?.value,
             },
@@ -2325,13 +2325,83 @@ module.exports.DeleteCustom = async (data) => {
         {
           _id: data?.productId,
         },
-        { $pull: { customOptions: { _id: data?.flavourId } } }
+        { $pull: { gourmetOptions: { _id: data?.flavourId } } }
       );
       let result = await Products.findOne({ _id: data?.customId });
       return {
         ...processhandler?.returnJSONsuccess,
         returnData: result,
         msg: `Product flavour deleted!`,
+      };
+    }
+  } catch (error) {
+    return { ...processhandler?.returnJSONfailure, msg: `Error: ${error}` };
+  }
+};
+
+module.exports.AddWeight = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.productId) ||
+      !this.voidCheck(data?.label) ||
+      !this.voidCheck(data?.value)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId, label, value}",
+      };
+    } else {
+      await Products.updateOne(
+        {
+          _id: data?.productId,
+        },
+        {
+          $push: {
+            weight: {
+              label: data?.label,
+              value: data?.value,
+            },
+          },
+        }
+      );
+      let result = await Products.findOne({ _id: data?.productId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Product weight added!`,
+      };
+    }
+  } catch (error) {
+    return { ...processhandler?.returnJSONfailure, msg: `Error: ${error}` };
+  }
+};
+
+module.exports.DeleteWeight = async (data) => {
+  try {
+    if (!this.voidCheck(data)) {
+      return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+    } else if (
+      !this.voidCheck(data?.productId) ||
+      !this.voidCheck(data?.weightId)
+    ) {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Missing keys: {productId, weightId}",
+      };
+    } else {
+      await Products.updateOne(
+        {
+          _id: data?.productId,
+        },
+        { $pull: { weight: { _id: data?.weightId } } }
+      );
+      let result = await Products.findOne({ _id: data?.customId });
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: `Product weight deleted!`,
       };
     }
   } catch (error) {

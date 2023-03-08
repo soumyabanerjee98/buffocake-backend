@@ -41,10 +41,6 @@ const ProductSchema = new mongoose.Schema({
       },
     },
   ],
-  unitValue: {
-    type: Number,
-    required: true,
-  },
   productImage: [
     {
       mediaPath: {
@@ -53,10 +49,18 @@ const ProductSchema = new mongoose.Schema({
       },
     },
   ],
-  minWeight: {
-    type: Number,
-    default: 1,
-  },
+  weight: [
+    {
+      label: {
+        type: Number,
+        required: true,
+      },
+      value: {
+        type: Number,
+        required: true,
+      },
+    },
+  ],
   availableFlavours: [
     {
       flavour: {
@@ -69,7 +73,7 @@ const ProductSchema = new mongoose.Schema({
       },
     },
   ],
-  customOptions: [
+  gourmetOptions: [
     {
       option: {
         type: String,

@@ -170,6 +170,12 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
     case "delete-product-custom":
       return utilfunctions?.DeleteCustom(data_json);
       break;
+    case "add-product-weight":
+      return utilfunctions?.AddWeight(data_json);
+      break;
+    case "delete-product-weight":
+      return utilfunctions?.DeleteWeight(data_json);
+      break;
     case "get-catagory-map":
       return utilfunctions?.GetCatagoryMap(data_json);
       break;

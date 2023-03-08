@@ -19,15 +19,14 @@ const CartSchema = new mongoose.Schema({
         type: Array,
         default: [],
       },
-      qty: {
-        type: Number,
-        required: true,
-      },
       weight: {
         type: Number,
         required: true,
       },
       flavour: {
+        type: String,
+      },
+      gourmet: {
         type: String,
       },
       custom: {
