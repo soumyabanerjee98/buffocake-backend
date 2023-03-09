@@ -1603,6 +1603,7 @@ module.exports.CreateOrder = async (data) => {
     if (!this.voidCheck(data)) {
       return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
     } else if (
+      !this.voidCheck(data?.type) ||
       !this.voidCheck(data?.userId) ||
       !this.voidCheck(data?.oid) ||
       !this.voidCheck(data?.txnId) ||
@@ -1615,10 +1616,11 @@ module.exports.CreateOrder = async (data) => {
     ) {
       return {
         ...processhandler?.returnJSONfailure,
-        msg: "Missing keys: {userId, oid, txnId, items, shippingAddress, total, paymentStatus, orderStatus, orderTimeStamp}",
+        msg: "Missing keys: {type, userId, oid, txnId, items, shippingAddress, total, paymentStatus, orderStatus, orderTimeStamp}",
       };
     } else {
       const newOrder = new Orders({
+        type: data?.type,
         userId: data?.userId,
         orderId: data?.oid,
         txnId: data?.txnId,
@@ -1630,7 +1632,12 @@ module.exports.CreateOrder = async (data) => {
         orderTimeStamp: data?.orderTimeStamp,
       });
       await newOrder.save();
-      let result = await Orders.find({ userId: data?.userId });
+      let result;
+      if (data?.type === "Online") {
+        result = await Orders.find({ userId: data?.userId });
+      } else {
+        result = await Orders.find();
+      }
       return {
         ...processhandler?.returnJSONsuccess,
         returnData: result,
