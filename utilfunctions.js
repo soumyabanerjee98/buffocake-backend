@@ -154,6 +154,7 @@ module.exports.LoginUserWithPhone = async (data) => {
             profileData: {
               id: findUser?._id,
               admin: findUser?.admin,
+              superAdmin: findUser?.superAdmin,
               firstName: findUser?.firstName,
               lastName: findUser?.lastName,
               email: findUser?.email,
@@ -204,6 +205,7 @@ module.exports.LoginUserWithEmail = async (data) => {
           profileData: {
             id: findUser?._id,
             admin: findUser?.admin,
+            superAdmin: findUser?.superAdmin,
             firstName: findUser?.firstName,
             lastName: findUser?.lastName,
             email: findUser?.email,
@@ -247,6 +249,7 @@ module.exports.VerifyToken = async (data) => {
                   returnData: {
                     id: user?._id,
                     admin: user?.admin,
+                    superAdmin: user?.superAdmin,
                     firstName: user?.firstName,
                     lastName: user?.lastName,
                     email: user?.email,
@@ -375,6 +378,7 @@ module.exports.CreateAccount = async (data) => {
           profileData: {
             id: result?._id,
             admin: result?.admin,
+            superAdmin: result?.superAdmin,
             firstName: result?.firstName,
             lastName: result?.lastName,
             email: result?.email,
@@ -443,6 +447,46 @@ module.exports.UpdateUser = async (data) => {
     return {
       ...processhandler?.returnJSONfailure,
       msg: `Error: ${error}`,
+    };
+  }
+};
+
+module.exports.GetAllUsers = async () => {
+  let users = await Users.find();
+  return {
+    ...processhandler?.returnJSONsuccess,
+    returnData: users,
+    msg: `Fetched all users`,
+  };
+};
+
+module.exports.UpdateUserAsAdmin = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (
+    !this.voidCheck(data?.userId) ||
+    !this.voidCheck(data?.admin) ||
+    !this.voidCheck(data?.superAdmin)
+  ) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {userId, admin, superAdmin}",
+    };
+  } else {
+    await Users.updateOne(
+      { _id: data?.userId },
+      {
+        $set: {
+          admin: data?.admin,
+          superAdmin: data?.superAdmin,
+        },
+      }
+    );
+    let result = await Users.find();
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnData: result,
+      msg: `Updated user`,
     };
   }
 };

@@ -29,6 +29,12 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
     case "update-user":
       return utilfunctions?.UpdateUser(data_json);
       break;
+    case "get-all-users":
+      return utilfunctions?.GetAllUsers();
+      break;
+    case "update-user-as-admin":
+      return utilfunctions?.UpdateUserAsAdmin(data_json);
+      break;
     case "add-address":
       return utilfunctions?.AddAddress(data_json);
       break;
