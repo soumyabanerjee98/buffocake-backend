@@ -13,6 +13,7 @@ const Orders = require("./models/Orders");
 const Catagory = require("./models/Catagory");
 const Subcatagory = require("./models/Subcatagory");
 const Carousel = require("./models/Carousel");
+const Pincode = require("./models/Pincode");
 
 dotenv.config();
 
@@ -2653,5 +2654,59 @@ module.exports.GetCarousel = async () => {
       returnData: [],
       msg: "No carousel in DB",
     };
+  }
+};
+
+module.exports.GetDeliveryPincode = async () => {
+  let result = await Pincode.find();
+  if (result?.length > 0) {
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnData: result?.[0]?.pincodes,
+      msg: "Pincodes fetched",
+    };
+  } else {
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnData: [],
+      msg: "No pincodes in DB",
+    };
+  }
+};
+
+module.exports.UploadPincodes = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (!this.voidCheck(data?.pincodes)) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {pincodes}",
+    };
+  } else {
+    const pincodes = await Pincode.find();
+    if (pincodes?.length > 0) {
+      let id = pincodes?.[0]?._id;
+      await Pincode.updateOne(
+        { _id: id },
+        { $set: { pincodes: data?.pincodes } }
+      );
+      let result = await Pincode.find();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result?.[0]?.pincodes,
+        msg: "Pincodes updated!",
+      };
+    } else {
+      const newPincode = new Pincode({
+        pincodes: data?.pincodes,
+      });
+      await newPincode.save();
+      let result = await Pincode.find();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result?.[0]?.pincodes,
+        msg: "Pincodes added!",
+      };
+    }
   }
 };

@@ -203,6 +203,12 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
     case "delete-carousel":
       return utilfunctions?.DeleteCarousel(data_json);
       break;
+    case "get-pincodes":
+      return utilfunctions?.GetDeliveryPincode();
+      break;
+    case "add-pincodes":
+      return utilfunctions?.UploadPincodes(data_json);
+      break;
     default:
       return { ...this.returnJSONfailure, msg: "No Process Id found" };
       break;
