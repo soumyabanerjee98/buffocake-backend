@@ -14,6 +14,7 @@ const Catagory = require("./models/Catagory");
 const Subcatagory = require("./models/Subcatagory");
 const Carousel = require("./models/Carousel");
 const Pincode = require("./models/Pincode");
+const Navbar = require("./models/Navbar");
 
 dotenv.config();
 
@@ -894,7 +895,7 @@ module.exports.TransactionTokenGenerate = async (data) => {
             });
 
             post_res.on("end", function () {
-              // console.log("Response: ", response);
+              // console.log("Response: ", JSON.parse(response).body);
               resolve(JSON.parse(response).body);
             });
           });
@@ -907,8 +908,7 @@ module.exports.TransactionTokenGenerate = async (data) => {
       if (myResponse?.resultInfo?.resultStatus === "F") {
         returnResponse = {
           ...processhandler?.returnJSONfailure,
-          returnData: myResponse?.resultInfo?.resultMsg,
-          msg: "Something went wrong!",
+          msg: myResponse?.resultInfo?.resultMsg,
         };
       } else {
         returnResponse = {
@@ -2706,6 +2706,72 @@ module.exports.UploadPincodes = async (data) => {
         ...processhandler?.returnJSONsuccess,
         returnData: result?.[0]?.pincodes,
         msg: "Pincodes added!",
+      };
+    }
+  }
+};
+
+module.exports.GetNavBar = async () => {
+  let result = await Navbar.find();
+  if (result?.length > 0) {
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnData: result,
+      msg: "Navbar data fetched",
+    };
+  } else {
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnData: [],
+      msg: "No navbar data in DB",
+    };
+  }
+};
+
+module.exports.AddNavBar = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (!this.voidCheck(data?.catagoryId)) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {catagoryId}",
+    };
+  } else {
+    const catagory = await Catagory.findOne({ _id: data?.catagoryId });
+    const newNavbar = new Navbar({ catagory: catagory });
+    await newNavbar.save();
+    let result = await Navbar.find();
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnData: result,
+      msg: "Navbar added!",
+    };
+  }
+};
+
+module.exports.DeleteNavBar = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (!this.voidCheck(data?.navId)) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {navId}",
+    };
+  } else {
+    const navbar = await Navbar.find();
+    if (navbar?.length > 0) {
+      await Navbar.deleteOne({ _id: data?.navId });
+      let result = await Navbar.find();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: "Navbar updated!",
+      };
+    } else {
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: [],
+        msg: "No navbar to delete!",
       };
     }
   }

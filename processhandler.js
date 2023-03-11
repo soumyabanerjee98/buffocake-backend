@@ -209,6 +209,15 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
     case "add-pincodes":
       return utilfunctions?.UploadPincodes(data_json);
       break;
+    case "get-navbar":
+      return utilfunctions?.GetNavBar();
+      break;
+    case "add-navbar":
+      return utilfunctions?.AddNavBar(data_json);
+      break;
+    case "delete-navbar":
+      return utilfunctions?.DeleteNavBar(data_json);
+      break;
     default:
       return { ...this.returnJSONfailure, msg: "No Process Id found" };
       break;
