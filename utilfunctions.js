@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const https = require("https");
 const PaytmChecksum = require("paytmchecksum");
 const jwt = require("jsonwebtoken");
+const CryptoJS = require("crypto-js");
 const Users = require("./models/Users");
 const Products = require("./models/Products");
 const Wishlists = require("./models/Wishlist");
@@ -28,6 +29,16 @@ module.exports.voidCheck = (data) => {
     return true;
   }
   return false;
+};
+
+module.exports.decryptData = (data) => {
+  try {
+    const bytes = CryptoJS.AES.decrypt(data, process.env.ENCKEY);
+    const originalText = bytes.toString(CryptoJS.enc.Utf8);
+    return originalText;
+  } catch (error) {
+    return null;
+  }
 };
 
 module.exports.PhoneVerify = async (data) => {
@@ -855,7 +866,7 @@ module.exports.TransactionTokenGenerate = async (data) => {
       let paytmParams = {};
       paytmParams.body = {
         requestType: "Payment",
-        mid: data?.mid,
+        mid: this.decryptData(data?.mid),
         websiteName: process.env.WEBSITE_NAME,
         orderId: data?.oid?.toString(),
         callbackUrl: process.env.PAYTM_CALLBACK_URL,
@@ -869,7 +880,7 @@ module.exports.TransactionTokenGenerate = async (data) => {
       };
       const checksum = await PaytmChecksum.generateSignature(
         JSON.stringify(paytmParams.body),
-        data?.mkey
+        this.decryptData(data?.mkey)
       );
       paytmParams.head = {
         signature: checksum,
@@ -880,7 +891,9 @@ module.exports.TransactionTokenGenerate = async (data) => {
           let options = {
             hostname: process.env.PAYTM_HOST,
             port: 443,
-            path: `/theia/api/v1/initiateTransaction?mid=${data?.mid}&orderId=${data?.oid}`,
+            path: `/theia/api/v1/initiateTransaction?mid=${this.decryptData(
+              data?.mid
+            )}&orderId=${data?.oid}`,
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -946,12 +959,12 @@ module.exports.TransactionVerify = async (data) => {
     } else {
       let paytmParams = {};
       paytmParams.body = {
-        mid: data?.mid,
+        mid: this.decryptData(data?.mid),
         orderId: data?.oid,
       };
       const checksum = await PaytmChecksum.generateSignature(
         JSON.stringify(paytmParams.body),
-        data?.mkey
+        this.decryptData(data?.mkey)
       );
       paytmParams.head = {
         signature: checksum,
