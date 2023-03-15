@@ -5,6 +5,10 @@ const CatagorySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  priority: {
+    type: Number,
+    required: true,
+  },
   subCatagory: [
     {
       subCatagoryId: {

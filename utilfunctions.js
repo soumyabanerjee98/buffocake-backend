@@ -1802,8 +1802,10 @@ module.exports.CreateCatagory = async (data) => {
         msg: "Missing keys: {label}",
       };
     } else {
+      let allCatagory = await Catagory.find();
       const newCatagory = new Catagory({
         catagory: data?.label,
+        priority: allCatagory?.length + 1,
       });
       await newCatagory.save();
       let result = await Catagory.find();
@@ -1849,10 +1851,14 @@ module.exports.UpdateCatagory = async (data) => {
   try {
     if (!this.voidCheck(data)) {
       return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
-    } else if (!this.voidCheck(data?.label) || !this.voidCheck(data?.value)) {
+    } else if (
+      !this.voidCheck(data?.label) ||
+      !this.voidCheck(data?.value) ||
+      !this.voidCheck(data?.priority)
+    ) {
       return {
         ...processhandler?.returnJSONfailure,
-        msg: "Missing keys: {label, value}",
+        msg: "Missing keys: {label, value, priority}",
       };
     } else {
       const findCatagory = await Catagory.findById(data?.value);
@@ -1866,7 +1872,19 @@ module.exports.UpdateCatagory = async (data) => {
           },
         }
       );
-      await findCatagory.updateOne({ $set: { catagory: data?.label } });
+      await Catagory.updateOne(
+        {
+          priority: data?.priority,
+        },
+        {
+          $set: {
+            priority: findCatagory?.priority,
+          },
+        }
+      );
+      await findCatagory.updateOne({
+        $set: { catagory: data?.label, priority: data?.priority },
+      });
       const result = await Catagory.find();
       return {
         ...processhandler?.returnJSONsuccess,
@@ -1919,8 +1937,10 @@ module.exports.CreateSubCatagory = async (data) => {
         msg: "Missing keys: {label}",
       };
     } else {
+      let allsubcatagory = await Subcatagory.find();
       const newSubCatagory = new Subcatagory({
         subCatagory: data?.label,
+        priority: allsubcatagory?.length + 1,
       });
       await newSubCatagory.save();
       let result = await Subcatagory.find();
@@ -1966,10 +1986,14 @@ module.exports.UpdateSubCatagory = async (data) => {
   try {
     if (!this.voidCheck(data)) {
       return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
-    } else if (!this.voidCheck(data?.label) || !this.voidCheck(data?.value)) {
+    } else if (
+      !this.voidCheck(data?.label) ||
+      !this.voidCheck(data?.value) ||
+      !this.voidCheck(data?.priority)
+    ) {
       return {
         ...processhandler?.returnJSONfailure,
-        msg: "Missing keys: {label, value}",
+        msg: "Missing keys: {label, value, priority}",
       };
     } else {
       const findSubCatagory = await Subcatagory.findById(data?.value);
@@ -1993,7 +2017,19 @@ module.exports.UpdateSubCatagory = async (data) => {
           },
         }
       );
-      await findSubCatagory.updateOne({ $set: { subCatagory: data?.label } });
+      await Subcatagory.updateOne(
+        {
+          priority: data?.priority,
+        },
+        {
+          $set: {
+            priority: findSubCatagory?.priority,
+          },
+        }
+      );
+      await findSubCatagory.updateOne({
+        $set: { subCatagory: data?.label, priority: data?.priority },
+      });
       const result = await Subcatagory.find();
       return {
         ...processhandler?.returnJSONsuccess,
