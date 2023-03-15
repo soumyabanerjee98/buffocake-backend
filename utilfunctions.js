@@ -864,9 +864,11 @@ module.exports.TransactionTokenGenerate = async (data) => {
       };
     } else {
       let paytmParams = {};
+      const mid = this.decryptData(data?.mid);
+      const mkey = this.decryptData(data?.mkey);
       paytmParams.body = {
         requestType: "Payment",
-        mid: this.decryptData(data?.mid),
+        mid: mid,
         websiteName: process.env.WEBSITE_NAME,
         orderId: data?.oid?.toString(),
         callbackUrl: process.env.PAYTM_CALLBACK_URL,
@@ -880,7 +882,7 @@ module.exports.TransactionTokenGenerate = async (data) => {
       };
       const checksum = await PaytmChecksum.generateSignature(
         JSON.stringify(paytmParams.body),
-        this.decryptData(data?.mkey)
+        mkey
       );
       paytmParams.head = {
         signature: checksum,
@@ -891,9 +893,7 @@ module.exports.TransactionTokenGenerate = async (data) => {
           let options = {
             hostname: process.env.PAYTM_HOST,
             port: 443,
-            path: `/theia/api/v1/initiateTransaction?mid=${this.decryptData(
-              data?.mid
-            )}&orderId=${data?.oid}`,
+            path: `/theia/api/v1/initiateTransaction?mid=${mid}&orderId=${data?.oid}`,
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -958,13 +958,15 @@ module.exports.TransactionVerify = async (data) => {
       };
     } else {
       let paytmParams = {};
+      const mid = this.decryptData(data?.mid);
+      const mkey = this.decryptData(data?.mkey);
       paytmParams.body = {
-        mid: this.decryptData(data?.mid),
+        mid: mid,
         orderId: data?.oid,
       };
       const checksum = await PaytmChecksum.generateSignature(
         JSON.stringify(paytmParams.body),
-        this.decryptData(data?.mkey)
+        mkey
       );
       paytmParams.head = {
         signature: checksum,
