@@ -2664,6 +2664,40 @@ module.exports.EditCarousel = async (data) => {
   }
 };
 
+module.exports.EditCarouselLink = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (!this.voidCheck(data?.carouselId) || !this.voidCheck(data?.link)) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {carouselId, link}",
+    };
+  } else {
+    const carousel = await Carousel.findOne({ _id: data?.carouselId });
+    if (carousel) {
+      await Carousel.updateOne(
+        { _id: data?.carouselId },
+        {
+          $set: {
+            link: data?.link,
+          },
+        }
+      );
+      let result = await Carousel.find();
+      return {
+        ...processhandler?.returnJSONsuccess,
+        returnData: result,
+        msg: "Carousel edited",
+      };
+    } else {
+      return {
+        ...processhandler?.returnJSONfailure,
+        msg: "Carousel not found!",
+      };
+    }
+  }
+};
+
 module.exports.DeleteCarousel = async (data) => {
   if (!this.voidCheck(data)) {
     return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };

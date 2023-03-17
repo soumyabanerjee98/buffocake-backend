@@ -5,6 +5,9 @@ const CarouselSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  link: {
+    type: String,
+  },
 });
 
 module.exports = mongoose.model("Carousels", CarouselSchema);

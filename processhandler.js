@@ -200,6 +200,9 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
     case "edit-carousel":
       return utilfunctions?.EditCarousel(data_json);
       break;
+    case "edit-carousel-link":
+      return utilfunctions?.EditCarouselLink(data_json);
+      break;
     case "delete-carousel":
       return utilfunctions?.DeleteCarousel(data_json);
       break;
