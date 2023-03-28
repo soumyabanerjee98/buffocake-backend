@@ -1029,11 +1029,12 @@ module.exports.SaveNewProduct = async (data) => {
       !this.voidCheck(data?.description) ||
       !this.voidCheck(data?.catagoryArr) ||
       !this.voidCheck(data?.subCatagoryArr) ||
-      !this.voidCheck(data?.weight)
+      !this.voidCheck(data?.weight) ||
+      !this.voidCheck(data?.sameDay)
     ) {
       return {
         ...processhandler?.returnJSONfailure,
-        msg: "Missing keys: {metaHead, metaDesc, title, description, catagoryArr, subCatagoryArr, weight}",
+        msg: "Missing keys: {metaHead, metaDesc, title, description, catagoryArr, subCatagoryArr, weight, sameDay}",
       };
     } else {
       const newProduct = new Products({
@@ -1059,6 +1060,7 @@ module.exports.SaveNewProduct = async (data) => {
         gourmetOptions: data?.gourmetOptions?.map((i) => {
           return { option: i?.option, value: i?.value };
         }),
+        sameDay: data?.sameDay,
       });
       await newProduct.save();
       let result = await Products.find();
@@ -1086,11 +1088,11 @@ module.exports.UpdateProduct = async (data) => {
       !this.voidCheck(data?.metaDesc) ||
       !this.voidCheck(data?.title) ||
       !this.voidCheck(data?.description) ||
-      !this.voidCheck(data?.minWeight)
+      !this.voidCheck(data?.sameDay)
     ) {
       return {
         ...processhandler?.returnJSONfailure,
-        msg: "Missing keys: {productId, metaHead, metaDesc, title, description, minWeight}",
+        msg: "Missing keys: {productId, metaHead, metaDesc, title, description, sameDay}",
       };
     } else {
       await Products.updateOne(
@@ -1101,7 +1103,7 @@ module.exports.UpdateProduct = async (data) => {
             metaDesc: data?.metaDesc,
             title: data?.title,
             description: data?.description,
-            minWeight: data?.minWeight,
+            sameDay: data?.sameDay,
           },
         }
       );

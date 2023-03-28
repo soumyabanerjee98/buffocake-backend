@@ -85,6 +85,10 @@ const ProductSchema = new mongoose.Schema({
       },
     },
   ],
+  sameDay: {
+    type: Boolean,
+    required: true,
+  },
 });
 
 module.exports = mongoose.model("Products", ProductSchema);
