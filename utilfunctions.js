@@ -1163,33 +1163,27 @@ module.exports.GetProductDetails = async (data) => {
   try {
     if (!this.voidCheck(data)) {
       return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
-    } else if (!this.voidCheck(data?.productId)) {
+    } else if (!this.voidCheck(data?.productMetaTitle)) {
       return {
         ...processhandler?.returnJSONfailure,
-        msg: "Missing keys: {productId}",
+        msg: "Missing keys: {productMetaTitle}",
       };
     } else {
-      const returnResponse = new Promise((resolve, reject) => {
-        Products.findById(data?.productId, (err, product) => {
-          if (err) {
-            resolve({
-              ...processhandler?.returnJSONfailure,
-              msg: `Error: ${err}`,
-            });
-          } else {
-            if (product === null) {
-              resolve({
-                ...processhandler?.returnJSONfailure,
-                msg: `Product not found!`,
-              });
-            } else {
-              resolve({
-                ...processhandler?.returnJSONsuccess,
-                returnData: product,
-                msg: "Data fetched successfully!",
-              });
-            }
-          }
+      const returnResponse = new Promise(async (resolve, reject) => {
+        const product = await Products.findOne({
+          metaHead: data?.productMetaTitle,
+        });
+        if (product) {
+          resolve({
+            ...processhandler?.returnJSONsuccess,
+            returnData: product,
+            msg: "Data fetched successfully!",
+          });
+          return;
+        }
+        resolve({
+          ...processhandler?.returnJSONfailure,
+          msg: `Product not found!`,
         });
       });
       return returnResponse;
@@ -1325,6 +1319,7 @@ module.exports.AddToWishlist = async (data) => {
           wishList: [
             {
               productId: itemDetails?._id,
+              productMetaTitle: itemDetails?.metaHead,
               productTitle: itemDetails?.title,
               productImage: itemDetails?.productImage,
             },
@@ -1343,6 +1338,7 @@ module.exports.AddToWishlist = async (data) => {
             $push: {
               wishList: {
                 productId: itemDetails?._id,
+                productMetaTitle: itemDetails?.metaHead,
                 productTitle: itemDetails?.title,
                 productImage: itemDetails?.productImage,
               },
@@ -1488,6 +1484,7 @@ module.exports.AddToCart = async (data) => {
               cart: {
                 productId: data?.productId,
                 productName: product?.title,
+                productMetaTitle: product?.metaHead,
                 productImage: product?.productImage,
                 weight: data?.weight,
                 flavour: data?.flavour,
@@ -1515,6 +1512,7 @@ module.exports.AddToCart = async (data) => {
             {
               productId: data?.productId,
               productName: product?.title,
+              productMetaTitle: product?.metaHead,
               productImage: product?.productImage,
               qty: data?.qty,
               weight: data?.weight,
