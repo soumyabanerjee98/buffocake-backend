@@ -221,6 +221,18 @@ module.exports.ProcessIdHandler = async (process_id, data_json) => {
     case "delete-navbar":
       return utilfunctions?.DeleteNavBar(data_json);
       break;
+    case "get-all-coupons":
+      return utilfunctions?.GetCoupons();
+      break;
+    case "add-coupon":
+      return utilfunctions?.AddCoupon(data_json);
+      break;
+    case "delete-coupon":
+      return utilfunctions?.DeleteCoupon(data_json);
+      break;
+    case "use-coupon":
+      return utilfunctions?.UseCoupon(data_json);
+      break;
     default:
       return { ...this.returnJSONfailure, msg: "No Process Id found" };
       break;

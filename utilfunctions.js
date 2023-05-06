@@ -16,6 +16,7 @@ const Subcatagory = require("./models/Subcatagory");
 const Carousel = require("./models/Carousel");
 const Pincode = require("./models/Pincode");
 const Navbar = require("./models/Navbar");
+const Coupon = require("./models/Coupon");
 
 dotenv.config();
 
@@ -1670,13 +1671,14 @@ module.exports.CreateOrder = async (data) => {
       !this.voidCheck(data?.items) ||
       !this.voidCheck(data?.shippingAddress) ||
       !this.voidCheck(data?.total) ||
+      !this.voidCheck(data?.discount) ||
       !this.voidCheck(data?.paymentStatus) ||
       !this.voidCheck(data?.orderStatus) ||
       !this.voidCheck(data?.orderTimeStamp)
     ) {
       return {
         ...processhandler?.returnJSONfailure,
-        msg: "Missing keys: {type, userId, oid, txnId, items, shippingAddress, total, paymentStatus, orderStatus, orderTimeStamp}",
+        msg: "Missing keys: {type, userId, oid, txnId, items, shippingAddress, total, discount, paymentStatus, orderStatus, orderTimeStamp}",
       };
     } else {
       const newOrder = new Orders({
@@ -1687,6 +1689,7 @@ module.exports.CreateOrder = async (data) => {
         items: data?.items,
         shippingAddress: data?.shippingAddress,
         total: data?.total,
+        discount: data?.discount,
         paymentStatus: data?.paymentStatus,
         orderStatus: data?.orderStatus,
         orderTimeStamp: data?.orderTimeStamp,
@@ -2859,5 +2862,76 @@ module.exports.DeleteNavBar = async (data) => {
         msg: "No navbar to delete!",
       };
     }
+  }
+};
+
+module.exports.GetCoupons = async () => {
+  const allCoupons = await Coupon.find();
+  return {
+    ...processhandler?.returnJSONsuccess,
+    returnData: allCoupons,
+    msg: "Coupons fetched!",
+  };
+};
+
+module.exports.AddCoupon = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (!this.voidCheck(data?.name) || !this.voidCheck(data?.value)) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {name, value}",
+    };
+  } else {
+    const newCoupon = new Coupon({
+      name: data?.name,
+      value: data?.value,
+    });
+    await newCoupon.save();
+    const allCoupons = await Coupon.find();
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnData: allCoupons,
+      msg: "New coupon saved!",
+    };
+  }
+};
+
+module.exports.DeleteCoupon = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (!this.voidCheck(data?.couponId)) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {couponId}",
+    };
+  } else {
+    await Coupon.deleteOne({ _id: data?.couponId });
+    const allCoupons = await Coupon.find();
+    return {
+      ...processhandler?.returnJSONsuccess,
+      returnData: allCoupons,
+      msg: "Coupon deleted!",
+    };
+  }
+};
+
+module.exports.UseCoupon = async (data) => {
+  if (!this.voidCheck(data)) {
+    return { ...processhandler?.returnJSONfailure, msg: "Invalid body" };
+  } else if (!this.voidCheck(data?.user) || !this.voidCheck(data?.couponId)) {
+    return {
+      ...processhandler?.returnJSONfailure,
+      msg: "Missing keys: {user, couponId}",
+    };
+  } else {
+    await Coupon.updateOne(
+      { _id: data?.couponId },
+      { $push: { usedUser: data?.user } }
+    );
+    return {
+      ...processhandler?.returnJSONsuccess,
+      msg: "Coupon used!",
+    };
   }
 };
